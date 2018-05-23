@@ -12,6 +12,8 @@
 #include "imgui.h"
 #include "imgui_glut.h"
 
+#include "AppConfig.h"
+
 boost::signals2::signal<void(int, int)> sig_renderer_start;
 boost::signals2::signal<void()> sig_renderer_stop;
 boost::signals2::signal<void()> sig_renderer_render;
@@ -219,7 +221,7 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	glutInitWindowSize(window_width, window_height);
-	glutCreateWindow("");
+	glutCreateWindow(APP_NAME);
 
 #ifdef __APPLE__
 	GLint swap_interval = 0;
