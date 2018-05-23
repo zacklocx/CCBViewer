@@ -1,10 +1,12 @@
 project(CCBViewer)
 
-set(APP_DEBUG 1)
+set(APP_NAME ${PROJECT_NAME})
 
 set(APP_VERSION_MAJOR 0)
 set(APP_VERSION_MINOR 1)
 set(APP_VERSION_BUILD 1)
+
+set(APP_DEBUG 1)
 
 configure_file(
 	"${PROJECT_SOURCE_DIR}/AppConfig.h.in"
@@ -25,11 +27,6 @@ find_package(soci REQUIRED)
 find_package(freeglut REQUIRED)
 find_package(Threads REQUIRED)
 
-if(APPLE)
-find_package(OpenGL REQUIRED)
-set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
-endif()
-
 set(EXTRA_LIBS ${EXTRA_LIBS} ${ZLIB_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${Boost_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENSSL_LIBRARIES})
@@ -38,6 +35,11 @@ set(EXTRA_LIBS ${EXTRA_LIBS} ${SQLITE3_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${SOCI_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${FREEGLUT_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+
+if(APPLE)
+find_package(OpenGL REQUIRED)
+set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
+endif()
 
 include_directories(${Boost_INCLUDE_DIR})
 
@@ -54,5 +56,5 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
 file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/imgui/*.cpp)
 file(GLOB_RECURSE APP_CPP *.cpp)
 
-add_executable(CCBViewer ${IMGUI_CPP} ${APP_CPP})
-target_link_libraries(CCBViewer ${EXTRA_LIBS})
+add_executable(${APP_NAME} ${IMGUI_CPP} ${APP_CPP})
+target_link_libraries(${APP_NAME} ${EXTRA_LIBS})

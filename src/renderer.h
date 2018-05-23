@@ -12,7 +12,7 @@ public:
 
 	static int mouse_x();
 	static int mouse_y();
-	static int mouse_button();
+	static int mouse_btn();
 
 	static void start(int width, int height, int bg_color = 0);
 	static void stop();

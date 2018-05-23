@@ -20,9 +20,9 @@ boost::signals2::signal<void()> sig_renderer_render;
 
 struct mouse_state_t
 {
-	mouse_state_t() : x_(0), y_(0), button_(-1) {}
+	mouse_state_t() : x_(0), y_(0), btn_(-1) {}
 
-	int x_, y_, button_;
+	int x_, y_, btn_;
 };
 
 static int window_width = 0;
@@ -118,28 +118,28 @@ static void mouse_wheel(int dir, int x, int y)
 	io.MouseWheel = dir;
 }
 
-static void mouse_click(int button, int state, int x, int y)
+static void mouse_click(int btn, int state, int x, int y)
 {
-	if(3 == button || 4 == button)
+	if(3 == btn || 4 == btn)
 	{
 		if(GLUT_DOWN == state)
 		{
-			mouse_wheel((3 == button)? 1 : -1, x, y);
+			mouse_wheel((3 == btn)? 1 : -1, x, y);
 		}
 	}
 	else
 	{
-		bool left_button = (GLUT_LEFT_BUTTON == button);
-		bool right_button = (GLUT_RIGHT_BUTTON == button);
+		bool left_btn = (GLUT_LEFT_BUTTON == btn);
+		bool right_btn = (GLUT_RIGHT_BUTTON == btn);
 
 		mouse_state.x_ = x;
 		mouse_state.y_ = window_height - 1 - y;
-		mouse_state.button_ = left_button? 0 : right_button? 1 : -1;
+		mouse_state.btn_ = left_btn? 0 : right_btn? 1 : -1;
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.MousePos = ImVec2(x, y);
 
-		if(left_button && GLUT_DOWN == state)
+		if(left_btn && GLUT_DOWN == state)
 		{
 			io.MouseDown[0] = true;
 		}
@@ -148,7 +148,7 @@ static void mouse_click(int button, int state, int x, int y)
 			io.MouseDown[0] = false;
 		}
 
-		if(right_button == button && GLUT_DOWN == state)
+		if(right_btn == btn && GLUT_DOWN == state)
 		{
 			io.MouseDown[1] = true;
 		}
@@ -163,7 +163,7 @@ static void mouse_move(int x, int y)
 {
 	mouse_state.x_ = x;
 	mouse_state.y_ = window_height - 1 - y;
-	mouse_state.button_ = -1;
+	mouse_state.btn_ = -1;
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.MousePos = ImVec2(x, y);
@@ -200,9 +200,9 @@ int renderer_t::mouse_y()
 	return mouse_state.y_;
 }
 
-int renderer_t::mouse_button()
+int renderer_t::mouse_btn()
 {
-	return mouse_state.button_;
+	return mouse_state.btn_;
 }
 
 void renderer_t::start(int width, int height, int bg_color /* = 0 */)
@@ -231,18 +231,6 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	}
 #endif
 
-	if(!(window_width > 0 && window_height > 0))
-	{
-		glutFullScreen();
-	}
-	else
-	{
-		int screen_width = glutGet(GLUT_SCREEN_WIDTH);
-		int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
-
-		glutPositionWindow((screen_width - window_width) / 2, (screen_height - window_height) / 2);
-	}
-
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	glutIdleFunc(idle);
@@ -254,6 +242,16 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	glutPassiveMotionFunc(mouse_move);
 	glutMotionFunc(mouse_drag);
 
+	if(!(window_width > 0 && window_height > 0))
+	{
+		glutFullScreen();
+	}
+	else
+	{
+		glutPositionWindow((glutGet(GLUT_SCREEN_WIDTH) - window_width) / 2,
+			(glutGet(GLUT_SCREEN_HEIGHT) - window_height) / 2);
+	}
+
 	double red = (bg_color / 65536 % 256) / 255.0;
 	double green = (bg_color / 256 % 256) / 255.0;
 	double blue = (bg_color % 256) / 255.0;
@@ -263,9 +261,7 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	imgui_glut_init();
 
 	sig_renderer_start(window_width, window_height);
-
 	glutMainLoop();
-
 	sig_renderer_stop();
 }
 
