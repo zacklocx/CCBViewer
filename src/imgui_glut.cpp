@@ -1,11 +1,11 @@
 
 #include "imgui_glut.h"
 
+#include <chrono>
+
 #include <GL/freeglut.h>
 
 #include "imgui.h"
-
-#include "utils.h"
 
 static void imgui_glut_draw(ImDrawData* data)
 {
@@ -164,12 +164,14 @@ void imgui_glut_prepare(int width, int height)
 
 	io.DisplaySize = ImVec2(width, height);
 
-	static uint64_t old_ts = timestamp_ms();
-	uint64_t new_ts = timestamp_ms();
+	static auto base_time = std::chrono::system_clock::now();
+	auto now = std::chrono::system_clock::now();
 
-	io.DeltaTime = (new_ts - old_ts) / 1000.0f;
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - base_time);
 
-	old_ts = new_ts;
+	io.DeltaTime = duration.count() / 1000.0f;
+
+	base_time = now;
 
 	ImGui::NewFrame();
 }

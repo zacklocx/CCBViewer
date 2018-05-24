@@ -12,8 +12,6 @@
 #include "imgui.h"
 #include "imgui_glut.h"
 
-#include "AppConfig.h"
-
 boost::signals2::signal<void(int, int)> sig_renderer_start;
 boost::signals2::signal<void()> sig_renderer_stop;
 boost::signals2::signal<void()> sig_renderer_render;
@@ -93,10 +91,9 @@ static void normal_key_down(unsigned char key, int x, int y)
 
 static void normal_key_up(unsigned char key, int x, int y)
 {
-	ImGuiIO& io = ImGui::GetIO();
-
 	if(!isprint(key))
 	{
+		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = false;
 	}
 }
@@ -207,7 +204,7 @@ int renderer_t::mouse_btn()
 	return mouse_state.btn_;
 }
 
-void renderer_t::start(int width, int height, int bg_color /* = 0 */)
+void renderer_t::start(int width, int height, int bg_color)
 {
 	window_width = width;
 	window_height = height;
@@ -221,7 +218,7 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	glutInitWindowSize(window_width, window_height);
-	glutCreateWindow(APP_NAME);
+	glutCreateWindow("");
 
 #ifdef __APPLE__
 	GLint swap_interval = 0;
@@ -232,6 +229,16 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 		CGLSetParameter(ctx, kCGLCPSwapInterval, &swap_interval);
 	}
 #endif
+
+	if(!(window_width > 0 && window_height > 0))
+	{
+		glutFullScreen();
+	}
+	else
+	{
+		glutPositionWindow((glutGet(GLUT_SCREEN_WIDTH) - window_width) / 2,
+			(glutGet(GLUT_SCREEN_HEIGHT) - window_height) / 2);
+	}
 
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
@@ -244,16 +251,6 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	glutPassiveMotionFunc(mouse_move);
 	glutMotionFunc(mouse_drag);
 
-	if(!(window_width > 0 && window_height > 0))
-	{
-		glutFullScreen();
-	}
-	else
-	{
-		glutPositionWindow((glutGet(GLUT_SCREEN_WIDTH) - window_width) / 2,
-			(glutGet(GLUT_SCREEN_HEIGHT) - window_height) / 2);
-	}
-
 	double red = (bg_color / 65536 % 256) / 255.0;
 	double green = (bg_color / 256 % 256) / 255.0;
 	double blue = (bg_color % 256) / 255.0;
@@ -263,7 +260,9 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */)
 	imgui_glut_init();
 
 	sig_renderer_start(window_width, window_height);
+
 	glutMainLoop();
+
 	sig_renderer_stop();
 }
 

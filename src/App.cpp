@@ -1,4 +1,5 @@
 
+#include <cmath>
 #include <thread>
 #include <exception>
 #include <initializer_list>
@@ -15,49 +16,41 @@
 #include "line_logger.h"
 #include "callback_timer.h"
 
-int frames = 0;
-std::chrono::time_point<std::chrono::system_clock> base_time;
-
 float point_x = 0;
 float point_y = 0;
 
 void on_update()
 {
-	int mouse_x = renderer_t::mouse_x();
-	int mouse_y = renderer_t::mouse_y();
-
-	point_x = mouse_x;
-	point_y = mouse_y;
+	point_x = renderer_t::mouse_x();
+	point_y = renderer_t::mouse_y();
 }
 
 void on_start(int width, int height)
 {
-	LLOG() << "on_start";
-	LLOG() << width << " " << height;
+	LLOG("on_start") << width << " " << height;
 }
 
 void on_stop()
 {
-	LLOG() << "on_stop";
+	LLOG("on_stop");
 }
 
 void on_render()
 {
-	if(0 == frames)
-	{
-		base_time = std::chrono::system_clock::now();
-	}
+	static int frame = 0;
+	++frame;
 
-	++frames;
-
+	static auto base_time = std::chrono::system_clock::now();
 	auto now = std::chrono::system_clock::now();
 
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - base_time);
 
 	if(duration.count() >= 1000)
 	{
-		LLOG() << "fps: " << 1000.0f * frames / duration.count();
-		frames = 0;
+		LLOG("fps") << round(1000.0f * frame / duration.count());
+
+		frame = 0;
+		base_time = now;
 	}
 
 	int width = renderer_t::width();
@@ -98,15 +91,15 @@ int main(int argc, char** argv)
 
 		timer.start();
 
-		std::thread event_thread([&]() { service.run(); });
+		std::thread logic_thread([&]() { service.run(); });
 
-		renderer_t::start(1334, 750);
+		renderer_t::start(1334, 750, 0xA6A6A6);
 
-		event_thread.join();
+		logic_thread.join();
 	}
 	catch(std::exception& e)
 	{
-		LLOG() << "exception: " << e.what();
+		LLOG("exception") << e.what();
 	}
 
 	return 0;
