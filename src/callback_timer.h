@@ -17,10 +17,10 @@ class callback_timer_t
 public:
 	typedef std::function<void()> handler_type;
 
-	callback_timer_t(boost::asio::io_service& service, int period_ms, handler_type handler) :
-		period_ms_(period_ms), count_(0), running_(false),
-		handler_(std::move(handler)),
-		timer_(std::make_shared<boost::asio::steady_timer>(std::ref(service), std::chrono::milliseconds(period_ms)))
+	callback_timer_t(boost::asio::io_service& service, int period_ms, handler_type handler)
+		: period_ms_(period_ms), count_(0), running_(false)
+		, handler_(std::move(handler))
+		, timer_(std::make_shared<boost::asio::steady_timer>(std::ref(service), std::chrono::milliseconds(period_ms)))
 	{}
 
 	int period() const { return period_ms_; }

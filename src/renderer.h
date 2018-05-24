@@ -14,7 +14,7 @@ public:
 	static int mouse_y();
 	static int mouse_btn();
 
-	static void start(int width, int height, int bg_color = 0);
+	static void start(int width, int height, int bg_color = 0, const char* title = "");
 	static void stop();
 };
 
