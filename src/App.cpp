@@ -38,11 +38,11 @@ void on_stop()
 void on_render()
 {
 	static int frame = 0;
+	static auto base_time = std::chrono::system_clock::now();
+
 	++frame;
 
-	static auto base_time = std::chrono::system_clock::now();
 	auto now = std::chrono::system_clock::now();
-
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - base_time);
 
 	if(duration.count() >= 1000)
