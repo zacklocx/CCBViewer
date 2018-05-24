@@ -204,21 +204,25 @@ int renderer_t::mouse_btn()
 	return mouse_state.btn_;
 }
 
-void renderer_t::start(int width, int height, int bg_color)
+void renderer_t::start(int width, int height, int bg_color /* = 0 */, const char* title /* = "" */)
 {
-	window_width = width;
-	window_height = height;
-
 	int argc = 1;
 	char _[] = "";
 	char* argv[] = { _, 0 };
 
 	glutInit(&argc, argv);
+
+	int screen_width = glutGet(GLUT_SCREEN_WIDTH);
+	int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
+
+	window_width = (width > 0)? width : screen_width;
+	window_height = (height > 0)? height : screen_height;
+
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	glutInitWindowSize(window_width, window_height);
-	glutCreateWindow("");
+	glutCreateWindow(title);
 
 #ifdef __APPLE__
 	GLint swap_interval = 0;
@@ -230,15 +234,7 @@ void renderer_t::start(int width, int height, int bg_color)
 	}
 #endif
 
-	if(!(window_width > 0 && window_height > 0))
-	{
-		glutFullScreen();
-	}
-	else
-	{
-		glutPositionWindow((glutGet(GLUT_SCREEN_WIDTH) - window_width) / 2,
-			(glutGet(GLUT_SCREEN_HEIGHT) - window_height) / 2);
-	}
+	glutPositionWindow((screen_width - window_width) / 2, (screen_height - window_height) / 2);
 
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);

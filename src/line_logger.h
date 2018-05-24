@@ -11,12 +11,15 @@
 class line_logger_t
 {
 public:
-	line_logger_t(const std::string& tag = "", std::ostream& out = std::cout) :
-		tag_(tag), out_(out)
+	line_logger_t(const std::string& tag = "", std::ostream& out = std::cout)
+#ifdef APP_DEBUG
+		: tag_(tag), out_(out)
+#endif
 	{}
 
 	~line_logger_t()
 	{
+#ifdef APP_DEBUG
 		stream_ << "\n";
 
 		auto now = std::chrono::system_clock::now();
@@ -32,21 +35,27 @@ public:
 
 		out_ << stream_.str();
 		out_.flush();
+#endif
 	}
 
 	template<typename T>
 	line_logger_t& operator <<(const T& t)
 	{
+#ifdef APP_DEBUG
 		stream_ << t;
+#endif
+
 		return *this;
 	}
 
 private:
+#ifdef APP_DEBUG
 	std::string tag_;
 	std::ostream& out_;
 	std::ostringstream stream_;
+#endif
 };
 
 #define LLOG line_logger_t
 
-#endif /* DUMP_INCLUDED */
+#endif /* LINE_LOGGER_INCLUDED */

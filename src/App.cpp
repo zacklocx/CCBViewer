@@ -1,41 +1,26 @@
 
 #include <cmath>
+
 #include <thread>
 #include <exception>
-#include <initializer_list>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
-#include <json/json.h>
 #include <GL/freeglut.h>
+#include <json/json.h>
 
 #include "AppConfig.h"
 
 #include "renderer.h"
 #include "line_logger.h"
-#include "callback_timer.h"
 
-float point_x = 0;
-float point_y = 0;
+bool g_halt = false;
 
-void on_update()
-{
-	point_x = renderer_t::mouse_x();
-	point_y = renderer_t::mouse_y();
-}
+float g_pos_x = 0;
+float g_pos_y = 0;
 
-void on_start(int width, int height)
-{
-	LLOG("on_start") << width << " " << height;
-}
-
-void on_stop()
-{
-	LLOG("on_stop");
-}
-
-void on_render()
+void fps()
 {
 	static int frame = 0;
 	static auto base_time = std::chrono::system_clock::now();
@@ -52,10 +37,22 @@ void on_render()
 		frame = 0;
 		base_time = now;
 	}
+}
 
-	int width = renderer_t::width();
-	int height = renderer_t::height();
+void on_start(int width, int height)
+{
+	LLOG("on_start") << width << " " << height;
+}
 
+void on_stop()
+{
+	LLOG("on_stop");
+
+	g_halt = true;
+}
+
+void on_render()
+{
 	glPushMatrix();
 	glLoadIdentity();
 
@@ -64,36 +61,33 @@ void on_render()
 	glBegin(GL_TRIANGLES);
 
 	glVertex2f(0.0f, 0.0f);
-	glVertex2f(point_x, point_y);
-	glVertex2f(width, height);
+	glVertex2f(g_pos_x, g_pos_y);
+	glVertex2f(renderer_t::width(), renderer_t::height());
 
 	glEnd();
 
 	glPopMatrix();
+
+	fps();
+}
+
+void on_update()
+{
+	g_pos_x = renderer_t::mouse_x();
+	g_pos_y = renderer_t::mouse_y();
 }
 
 int main(int argc, char** argv)
 {
 	try
 	{
-		boost::asio::io_service service;
-
-		int peroid_ms = 10;
-
-		callback_timer_t timer(service, peroid_ms, [&]()
-		{
-			on_update();
-		});
+		std::thread logic_thread([&]() { while(!g_halt) on_update(); });
 
 		sig_renderer_start.connect(boost::bind(on_start, _1, _2));
-		sig_renderer_stop.connect(boost::bind<void>([&]() { on_stop(); timer.stop(); }));
+		sig_renderer_stop.connect(boost::bind<void>([&]() { on_stop(); }));
 		sig_renderer_render.connect(boost::bind(on_render));
 
-		timer.start();
-
-		std::thread logic_thread([&]() { service.run(); });
-
-		renderer_t::start(1334, 750, 0xA6A6A6);
+		renderer_t::start(0, 0, 0xA6A6A6, APP_NAME);
 
 		logic_thread.join();
 	}
