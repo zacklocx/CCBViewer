@@ -16,8 +16,6 @@ boost::signals2::signal<void(int, int)> sig_renderer_start;
 boost::signals2::signal<void()> sig_renderer_stop;
 boost::signals2::signal<void()> sig_renderer_render;
 
-////////////////////////////////////////////////////////////////////////////////
-
 namespace
 {
 	struct mouse_state_t
@@ -246,7 +244,6 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */, const char
 
 	glutInitWindowSize(window_width, window_height);
 	glutCreateWindow(title);
-
 	glutPositionWindow((screen_width - window_width) / 2, (screen_height - window_height) / 2);
 
 	glutReshapeFunc(reshape);
@@ -266,9 +263,7 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */, const char
 	toggle_vsync(false);
 
 	sig_renderer_start(window_width, window_height);
-
 	glutMainLoop();
-
 	sig_renderer_stop();
 }
 
