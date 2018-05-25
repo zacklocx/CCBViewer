@@ -6,6 +6,7 @@
 #include <iostream>
 
 #ifdef APP_DEBUG
+#include <mutex>
 #include <chrono>
 #include <sstream>
 #include <iomanip>
@@ -29,15 +30,20 @@ public:
 		auto time = std::chrono::system_clock::to_time_t(now);
 		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
 
-		out_ << "[" << std::put_time(std::localtime(&time), "%F %T") << "." << std::setfill('0') << std::setw(3) << ms << "] ";
-
-		if(tag_ != "")
+		static std::mutex mutex;
 		{
-			out_ << "<" << tag_ << "> ";
-		}
+			std::lock_guard<std::mutex> lock(mutex);
 
-		out_ << stream_.str();
-		out_.flush();
+			out_ << "[" << std::put_time(std::localtime(&time), "%F %T") << "." << std::setfill('0') << std::setw(3) << ms << "] ";
+
+			if(tag_ != "")
+			{
+				out_ << "<" << tag_ << "> ";
+			}
+
+			out_ << stream_.str();
+			out_.flush();
+		}
 	#endif
 	}
 

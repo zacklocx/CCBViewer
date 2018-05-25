@@ -18,6 +18,8 @@ boost::signals2::signal<void()> sig_renderer_render;
 
 namespace
 {
+	enum class renderer_state_t { idle, busy, halt };
+
 	struct mouse_state_t
 	{
 		mouse_state_t() : x_(0), y_(0), btn_(-1) {}
@@ -27,6 +29,8 @@ namespace
 
 	int window_width = 0;
 	int window_height = 0;
+
+	renderer_state_t renderer_state = renderer_state_t::idle;
 	mouse_state_t mouse_state;
 
 	void stop()
@@ -65,7 +69,15 @@ namespace
 
 	void idle()
 	{
-		display();
+		if(renderer_state != renderer_state_t::halt)
+		{
+			display();
+		}
+		else
+		{
+			renderer_state = renderer_state_t::idle;
+			stop();
+		}
 	}
 
 	void normal_key_down(unsigned char key, int x, int y)
@@ -176,28 +188,11 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.MousePos = ImVec2(x, y);
 	}
+}
 
-	void set_bg_color(int bg_color)
-	{
-		int red = bg_color >> 16;
-		int green = (bg_color & 0x00FF00) >> 8;
-		int blue = (bg_color & 0x0000FF);
-
-		glClearColor(red / 255.0, green / 255.0, blue / 255.0, 1.0);
-	}
-
-	void toggle_vsync(bool on)
-	{
-	#ifdef __APPLE__
-		GLint swap_interval = on? 1 : 0;
-		CGLContextObj ctx = CGLGetCurrentContext();
-
-		if(ctx)
-		{
-			CGLSetParameter(ctx, kCGLCPSwapInterval, &swap_interval);
-		}
-	#endif
-	}
+bool renderer_t::ready()
+{
+	return renderer_state_t::busy == renderer_state;
 }
 
 int renderer_t::width()
@@ -225,7 +220,7 @@ int renderer_t::mouse_btn()
 	return mouse_state.btn_;
 }
 
-void renderer_t::start(int width, int height, int bg_color /* = 0 */, const char* title /* = "" */)
+void renderer_t::start(int width, int height)
 {
 	int argc = 1;
 	char _[] = "";
@@ -243,7 +238,7 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */, const char
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	glutInitWindowSize(window_width, window_height);
-	glutCreateWindow(title);
+	glutCreateWindow("");
 	glutPositionWindow((screen_width - window_width) / 2, (screen_height - window_height) / 2);
 
 	glutReshapeFunc(reshape);
@@ -259,15 +254,55 @@ void renderer_t::start(int width, int height, int bg_color /* = 0 */, const char
 
 	imgui_glut_init();
 
-	set_bg_color(bg_color);
-	toggle_vsync(false);
-
+	renderer_state = renderer_state_t::busy;
 	sig_renderer_start(window_width, window_height);
+
 	glutMainLoop();
+
+	renderer_state = renderer_state_t::idle;
 	sig_renderer_stop();
 }
 
 void renderer_t::stop()
 {
-	::stop();
+	if(ready())
+	{
+		renderer_state = renderer_state_t::halt;
+	}
+}
+
+void renderer_t::set_bg_color(int bg_color)
+{
+	if(ready())
+	{
+		int red = bg_color >> 16;
+		int green = (bg_color & 0x00FF00) >> 8;
+		int blue = (bg_color & 0x0000FF);
+
+		glClearColor(red / 255.0, green / 255.0, blue / 255.0, 1.0);
+	}
+}
+
+void renderer_t::set_title(const char* title)
+{
+	if(ready())
+	{
+		glutSetWindowTitle(title);
+	}
+}
+
+void renderer_t::toggle_vsync(bool on)
+{
+	if(ready())
+	{
+	#ifdef __APPLE__
+		GLint swap_interval = on? 1 : 0;
+		CGLContextObj ctx = CGLGetCurrentContext();
+
+		if(ctx)
+		{
+			CGLSetParameter(ctx, kCGLCPSwapInterval, &swap_interval);
+		}
+	#endif
+	}
 }

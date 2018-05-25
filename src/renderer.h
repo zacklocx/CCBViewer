@@ -7,6 +7,8 @@
 class renderer_t
 {
 public:
+	static bool ready();
+
 	static int width();
 	static int height();
 
@@ -14,8 +16,13 @@ public:
 	static int mouse_y();
 	static int mouse_btn();
 
-	static void start(int width, int height, int bg_color = 0, const char* title = "");
+	static void start(int width, int height);
 	static void stop();
+
+	static void set_bg_color(int bg_color);
+	static void set_title(const char* title);
+
+	static void toggle_vsync(bool on);
 };
 
 extern boost::signals2::signal<void(int, int)> sig_renderer_start;

@@ -44,6 +44,10 @@ namespace
 	void on_start(int width, int height)
 	{
 		LLOG("on_start") << width << " " << height;
+
+		renderer_t::set_bg_color(0xA6A6A6);
+		renderer_t::set_title(APP_NAME);
+		renderer_t::toggle_vsync(false);
 	}
 
 	void on_stop()
@@ -62,9 +66,12 @@ namespace
 
 		glBegin(GL_TRIANGLES);
 
+		int width = renderer_t::width();
+		int height = renderer_t::height();
+
 		glVertex2f(0.0f, 0.0f);
 		glVertex2f(pos_x, pos_y);
-		glVertex2f(renderer_t::width(), renderer_t::height());
+		glVertex2f(width, height);
 
 		glEnd();
 
@@ -75,8 +82,18 @@ namespace
 
 	void on_update()
 	{
-		pos_x = renderer_t::mouse_x();
-		pos_y = renderer_t::mouse_y();
+		if(renderer_t::ready())
+		{
+			LLOG("on_update");
+
+			pos_x = renderer_t::mouse_x();
+			pos_y = renderer_t::mouse_y();
+
+			if(pos_x >= 1000)
+			{
+				renderer_t::stop();
+			}
+		}
 	}
 }
 
@@ -87,10 +104,10 @@ int main(int argc, char** argv)
 		std::thread logic_thread([&]() { while(!halt) on_update(); });
 
 		sig_renderer_start.connect(boost::bind(on_start, _1, _2));
-		sig_renderer_stop.connect(boost::bind<void>([&]() { on_stop(); }));
+		sig_renderer_stop.connect(boost::bind<void>([]() { on_stop(); }));
 		sig_renderer_render.connect(boost::bind(on_render));
 
-		renderer_t::start(1334, 750, 0xA6A6A6, APP_NAME);
+		renderer_t::start(1334, 750);
 
 		logic_thread.join();
 	}
