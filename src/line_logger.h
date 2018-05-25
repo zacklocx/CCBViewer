@@ -2,24 +2,27 @@
 #ifndef LINE_LOGGER_INCLUDED
 #define LINE_LOGGER_INCLUDED
 
-#include <chrono>
 #include <string>
+#include <iostream>
+
+#ifdef APP_DEBUG
+#include <chrono>
 #include <sstream>
 #include <iomanip>
-#include <iostream>
+#endif
 
 class line_logger_t
 {
 public:
 	line_logger_t(const std::string& tag = "", std::ostream& out = std::cout)
-#ifdef APP_DEBUG
+	#ifdef APP_DEBUG
 		: tag_(tag), out_(out)
-#endif
+	#endif
 	{}
 
 	~line_logger_t()
 	{
-#ifdef APP_DEBUG
+	#ifdef APP_DEBUG
 		stream_ << "\n";
 
 		auto now = std::chrono::system_clock::now();
@@ -35,15 +38,15 @@ public:
 
 		out_ << stream_.str();
 		out_.flush();
-#endif
+	#endif
 	}
 
 	template<typename T>
 	line_logger_t& operator <<(const T& t)
 	{
-#ifdef APP_DEBUG
+	#ifdef APP_DEBUG
 		stream_ << t;
-#endif
+	#endif
 
 		return *this;
 	}
