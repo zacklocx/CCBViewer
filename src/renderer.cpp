@@ -18,7 +18,7 @@ boost::signals2::signal<void()> sig_renderer_render;
 
 namespace
 {
-	enum class renderer_state_t { idle, busy, halt };
+	enum class renderer_state_t { idle, init, busy, halt };
 
 	struct mouse_state_t
 	{
@@ -35,6 +35,8 @@ namespace
 
 	void stop()
 	{
+		renderer_state = renderer_state_t::idle;
+
 		imgui_glut_shutdown();
 		glutLeaveMainLoop();
 	}
@@ -75,7 +77,6 @@ namespace
 		}
 		else
 		{
-			renderer_state = renderer_state_t::idle;
 			stop();
 		}
 	}
@@ -254,18 +255,22 @@ void renderer_t::start(int width, int height)
 
 	imgui_glut_init();
 
-	renderer_state = renderer_state_t::busy;
+	renderer_state = renderer_state_t::init;
+
 	sig_renderer_start(window_width, window_height);
+
+	renderer_state = renderer_state_t::busy;
 
 	glutMainLoop();
 
 	renderer_state = renderer_state_t::idle;
+
 	sig_renderer_stop();
 }
 
 void renderer_t::stop()
 {
-	if(ready())
+	if(renderer_state_t::busy == renderer_state)
 	{
 		renderer_state = renderer_state_t::halt;
 	}
@@ -273,7 +278,7 @@ void renderer_t::stop()
 
 void renderer_t::set_bg_color(int bg_color)
 {
-	if(ready())
+	if(renderer_state_t::init == renderer_state || renderer_state_t::busy == renderer_state)
 	{
 		int red = bg_color >> 16;
 		int green = (bg_color & 0x00FF00) >> 8;
@@ -285,7 +290,7 @@ void renderer_t::set_bg_color(int bg_color)
 
 void renderer_t::set_title(const char* title)
 {
-	if(ready())
+	if(renderer_state_t::init == renderer_state || renderer_state_t::busy == renderer_state)
 	{
 		glutSetWindowTitle(title);
 	}
@@ -293,7 +298,7 @@ void renderer_t::set_title(const char* title)
 
 void renderer_t::toggle_vsync(bool on)
 {
-	if(ready())
+	if(renderer_state_t::init == renderer_state || renderer_state_t::busy == renderer_state)
 	{
 	#ifdef __APPLE__
 		GLint swap_interval = on? 1 : 0;

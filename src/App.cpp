@@ -69,9 +69,9 @@ namespace
 		int width = renderer_t::width();
 		int height = renderer_t::height();
 
-		glVertex2f(0.0f, 0.0f);
+		glVertex2f(0, 0);
 		glVertex2f(pos_x, pos_y);
-		glVertex2f(width, height);
+		glVertex2f(width - 1, height - 1);
 
 		glEnd();
 
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		std::thread logic_thread([&]() { while(!halt) on_update(); });
+		std::thread logic_thread([]() { while(!halt) on_update(); });
 
 		sig_renderer_start.connect(boost::bind(on_start, _1, _2));
 		sig_renderer_stop.connect(boost::bind<void>([]() { on_stop(); }));
