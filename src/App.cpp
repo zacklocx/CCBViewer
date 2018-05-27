@@ -10,7 +10,7 @@
 #include <GL/freeglut.h>
 #include <json/json.h>
 
-#include "AppConfig.h"
+#include "app_config.h"
 
 #include "renderer.h"
 #include "line_logger.h"

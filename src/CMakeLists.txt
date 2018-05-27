@@ -9,8 +9,8 @@ set(APP_VERSION_BUILD 1)
 set(APP_DEBUG 1)
 
 configure_file(
-	"${PROJECT_SOURCE_DIR}/AppConfig.h.in"
-	"${PROJECT_SOURCE_DIR}/AppConfig.h"
+	"${PROJECT_SOURCE_DIR}/app_config.h.in"
+	"${PROJECT_SOURCE_DIR}/app_config.h"
 )
 
 add_definitions(-DSOCI_USE_BOOST)
