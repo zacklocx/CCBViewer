@@ -18,24 +18,50 @@
 
 #include "render.h"
 
-class A
-{
-public:
-	A() {}
-};
-
-void render(A a)
-{
-	LLOG("A") << "a";
-}
-
 namespace
 {
-	float pos_x = 0.0f;
-	float pos_y = 0.0f;
+	render_cmd_t render_cmd;
 
 	std::mutex e_mutex;
 	std::exception_ptr e_ptr = nullptr;
+
+	class demo_t
+	{
+	public:
+		demo_t() : x_(0.0f), y_(0.0f) {}
+
+		void set_x(float x) { x_ = x; }
+		void set_y(float y) { y_ = y; }
+
+		float get_x() const { return x_; }
+		float get_y() const { return y_; }
+
+	private:
+		float x_, y_;
+	};
+
+	demo_t demo;
+
+	void render(demo_t d)
+	{
+		glPushMatrix();
+		glLoadIdentity();
+
+		glColor3ub(255, 0, 0);
+
+		glBegin(GL_TRIANGLES);
+
+		int width = render_win_t::width();
+		int height = render_win_t::height();
+
+		glVertex2f(0, 0);
+		glVertex2f(d.get_x(), d.get_y());
+		glVertex2f(width - 1, height - 1);
+
+		glEnd();
+
+		glPopMatrix();
+	}
 
 	void fps()
 	{
@@ -62,13 +88,18 @@ namespace
 		{
 			// LLOG("on_update");
 
-			pos_x = render_win_t::mouse_x();
-			pos_y = render_win_t::mouse_y();
+			float x = render_win_t::mouse_x();
+			float y = render_win_t::mouse_y();
 
-			if(pos_x > 1000)
+			if(x > 1000)
 			{
-				throw std::logic_error("pos_x is bigger than 1000");
+				throw std::logic_error("x is bigger than 1000");
 			}
+
+			demo.set_x(x);
+			demo.set_y(y);
+
+			render_cmd.add(demo);
 		}
 		catch(...)
 		{
@@ -94,23 +125,8 @@ namespace
 
 	void on_render()
 	{
-		glPushMatrix();
-		glLoadIdentity();
-
-		glColor3ub(255, 0, 0);
-
-		glBegin(GL_TRIANGLES);
-
-		int width = render_win_t::width();
-		int height = render_win_t::height();
-
-		glVertex2f(0, 0);
-		glVertex2f(pos_x, pos_y);
-		glVertex2f(width - 1, height - 1);
-
-		glEnd();
-
-		glPopMatrix();
+		render(render_cmd);
+		//render_cmd.clear();
 
 		fps();
 	}
@@ -120,12 +136,6 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		render_cmd_t cmd;
-
-		cmd.add(A{});
-
-		render(cmd);
-
 		sig_win_create.connect(boost::bind(on_create, _1, _2));
 		sig_win_destroy.connect(boost::bind(on_destroy));
 		sig_win_render.connect(boost::bind(on_render));

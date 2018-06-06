@@ -30,7 +30,7 @@ private:
 
 	std::shared_ptr<const concept_t> self_;
 
-	friend void render(const render_obj_t& obj);
+	friend void render(const render_obj_t&);
 };
 
 class render_cmd_t
