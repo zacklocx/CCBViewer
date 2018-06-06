@@ -12,14 +12,25 @@
 
 #include "app_config.h"
 
-#include "renderer.h"
+#include "render_win.h"
 #include "line_logger.h"
 #include "scoped_thread.h"
 
+#include "render.h"
+
+class A
+{
+public:
+	A() {}
+};
+
+void render(A a)
+{
+	LLOG("A") << "a";
+}
+
 namespace
 {
-	bool halt = false;
-
 	float pos_x = 0.0f;
 	float pos_y = 0.0f;
 
@@ -45,20 +56,40 @@ namespace
 		}
 	}
 
-	void on_start(int width, int height)
+	void on_update()
 	{
-		LLOG("on_start") << width << " " << height;
+		try
+		{
+			// LLOG("on_update");
 
-		renderer_t::set_bg_color(0xA6A6A6);
-		renderer_t::set_title(APP_NAME);
-		renderer_t::toggle_vsync(false);
+			pos_x = render_win_t::mouse_x();
+			pos_y = render_win_t::mouse_y();
+
+			if(pos_x > 1000)
+			{
+				throw std::logic_error("pos_x is bigger than 1000");
+			}
+		}
+		catch(...)
+		{
+			std::lock_guard<std::mutex> lock(e_mutex);
+
+			e_ptr = std::current_exception();
+			render_win_t::destroy();
+		}
 	}
 
-	void on_stop()
+	void on_create(int width, int height)
 	{
-		LLOG("on_stop");
+		LLOG("on_create") << width << " " << height;
 
-		halt = true;
+		scoped_thread_t logic_thread(std::thread([]() { while(render_win_t::ready()) on_update(); }),
+			scoped_thread_t::action::detach);
+	}
+
+	void on_destroy()
+	{
+		LLOG("on_destroy");
 	}
 
 	void on_render()
@@ -70,8 +101,8 @@ namespace
 
 		glBegin(GL_TRIANGLES);
 
-		int width = renderer_t::width();
-		int height = renderer_t::height();
+		int width = render_win_t::width();
+		int height = render_win_t::height();
 
 		glVertex2f(0, 0);
 		glVertex2f(pos_x, pos_y);
@@ -83,45 +114,23 @@ namespace
 
 		fps();
 	}
-
-	void on_update()
-	{
-		try
-		{
-			if(renderer_t::ready())
-			{
-				LLOG("on_update");
-
-				pos_x = renderer_t::mouse_x();
-				pos_y = renderer_t::mouse_y();
-
-				if(pos_x > 1000)
-				{
-					throw std::logic_error("pos_x is bigger than 1000");
-				}
-			}
-		}
-		catch(...)
-		{
-			std::lock_guard<std::mutex> lock(e_mutex);
-
-			e_ptr = std::current_exception();
-			renderer_t::stop();
-		}
-	}
 }
 
 int main(int argc, char** argv)
 {
 	try
 	{
-		scoped_thread_t logic_thread(std::thread([]() { while(!halt) on_update(); }));
+		render_cmd_t cmd;
 
-		sig_renderer_start.connect(boost::bind(on_start, _1, _2));
-		sig_renderer_stop.connect(boost::bind(on_stop));
-		sig_renderer_render.connect(boost::bind(on_render));
+		cmd.add(A{});
 
-		renderer_t::start(1334, 750);
+		render(cmd);
+
+		sig_win_create.connect(boost::bind(on_create, _1, _2));
+		sig_win_destroy.connect(boost::bind(on_destroy));
+		sig_win_render.connect(boost::bind(on_render));
+
+		render_win_t::create(1334, 750);
 
 		if(e_ptr)
 		{

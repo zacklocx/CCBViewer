@@ -8,8 +8,10 @@
 class scoped_thread_t
 {
 public:
-	explicit scoped_thread_t(std::thread t)
-		: t_(std::move(t))
+	enum class action { join, detach };
+
+	scoped_thread_t(std::thread t, action act)
+		: t_(std::move(t)), act_(act)
 	{
 		if(!t_.joinable())
 		{
@@ -19,7 +21,14 @@ public:
 
 	~scoped_thread_t()
 	{
-		t_.join();
+		if(action::join == act_)
+		{
+			t_.join();
+		}
+		else
+		{
+			t_.detach();
+		}
 	}
 
 	scoped_thread_t(scoped_thread_t&) = delete;
@@ -27,6 +36,7 @@ public:
 
 private:
 	std::thread t_;
+	action act_;
 };
 
 #endif /* SCOPED_THREAD_INCLUDED */

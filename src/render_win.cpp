@@ -1,25 +1,19 @@
 
-#include "renderer.h"
+#include "render_win.h"
 
 #include <cctype>
-
-#ifdef __APPLE__
-#include <OpenGL/OpenGL.h>
-#endif
 
 #include <GL/freeglut.h>
 
 #include "imgui.h"
 #include "imgui_glut.h"
 
-boost::signals2::signal<void(int, int)> sig_renderer_start;
-boost::signals2::signal<void()> sig_renderer_stop;
-boost::signals2::signal<void()> sig_renderer_render;
+boost::signals2::signal<void(int, int)> sig_win_create;
+boost::signals2::signal<void()> sig_win_destroy;
+boost::signals2::signal<void()> sig_win_render;
 
 namespace
 {
-	enum class renderer_state_t { idle, init, busy, halt };
-
 	struct mouse_state_t
 	{
 		mouse_state_t() : x_(0), y_(0), btn_(-1) {}
@@ -27,15 +21,18 @@ namespace
 		int x_, y_, btn_;
 	};
 
-	int window_width = 0;
-	int window_height = 0;
+	bool win_ready = false;
+	bool win_halt = false;
 
-	renderer_state_t renderer_state = renderer_state_t::idle;
+	int win_width = 0;
+	int win_height = 0;
+
 	mouse_state_t mouse_state;
 
 	void stop()
 	{
-		renderer_state = renderer_state_t::idle;
+		win_ready = false;
+		win_halt = true;
 
 		imgui_glut_shutdown();
 		glutLeaveMainLoop();
@@ -43,14 +40,14 @@ namespace
 
 	void reshape(int width, int height)
 	{
-		window_width = width;
-		window_height = height;
+		win_width = width;
+		win_height = height;
 
-		glViewport(0, 0, window_width, window_height);
+		glViewport(0, 0, win_width, win_height);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, window_width, 0, window_height, -1, 1);
+		glOrtho(0, win_width, 0, win_height, -1, 1);
 
 		glMatrixMode(GL_MODELVIEW);
 	}
@@ -59,9 +56,9 @@ namespace
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		imgui_glut_prepare(window_width, window_height);
+		imgui_glut_prepare(win_width, win_height);
 
-		sig_renderer_render();
+		sig_win_render();
 
 		// ImGui::ShowTestWindow();
 		ImGui::Render();
@@ -71,14 +68,13 @@ namespace
 
 	void idle()
 	{
-		if(renderer_state != renderer_state_t::halt)
-		{
-			display();
-		}
-		else
+		if(win_halt)
 		{
 			stop();
+			return;
 		}
+
+		display();
 	}
 
 	void normal_key_down(unsigned char key, int x, int y)
@@ -145,7 +141,7 @@ namespace
 			bool right_btn = (GLUT_RIGHT_BUTTON == btn);
 
 			mouse_state.x_ = x;
-			mouse_state.y_ = window_height - 1 - y;
+			mouse_state.y_ = win_height - 1 - y;
 			mouse_state.btn_ = left_btn? 0 : right_btn? 1 : -1;
 
 			ImGuiIO& io = ImGui::GetIO();
@@ -174,7 +170,7 @@ namespace
 	void mouse_move(int x, int y)
 	{
 		mouse_state.x_ = x;
-		mouse_state.y_ = window_height - 1 - y;
+		mouse_state.y_ = win_height - 1 - y;
 		mouse_state.btn_ = -1;
 
 		ImGuiIO& io = ImGui::GetIO();
@@ -184,44 +180,44 @@ namespace
 	void mouse_drag(int x, int y)
 	{
 		mouse_state.x_ = x;
-		mouse_state.y_ = window_height - 1 - y;
+		mouse_state.y_ = win_height - 1 - y;
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.MousePos = ImVec2(x, y);
 	}
 }
 
-bool renderer_t::ready()
+bool render_win_t::ready()
 {
-	return renderer_state_t::busy == renderer_state;
+	return win_ready;
 }
 
-int renderer_t::width()
+int render_win_t::width()
 {
-	return window_width;
+	return win_width;
 }
 
-int renderer_t::height()
+int render_win_t::height()
 {
-	return window_height;
+	return win_height;
 }
 
-int renderer_t::mouse_x()
+int render_win_t::mouse_x()
 {
 	return mouse_state.x_;
 }
 
-int renderer_t::mouse_y()
+int render_win_t::mouse_y()
 {
 	return mouse_state.y_;
 }
 
-int renderer_t::mouse_btn()
+int render_win_t::mouse_btn()
 {
 	return mouse_state.btn_;
 }
 
-void renderer_t::start(int width, int height)
+void render_win_t::create(int width, int height)
 {
 	int argc = 1;
 	char _[] = "";
@@ -232,15 +228,15 @@ void renderer_t::start(int width, int height)
 	int screen_width = glutGet(GLUT_SCREEN_WIDTH);
 	int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 
-	window_width = (width > 0)? width : screen_width;
-	window_height = (height > 0)? height : screen_height;
+	win_width = (width > 0)? width : screen_width;
+	win_height = (height > 0)? height : screen_height;
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-	glutInitWindowSize(window_width, window_height);
+	glutInitWindowSize(win_width, win_height);
 	glutCreateWindow("");
-	glutPositionWindow((screen_width - window_width) / 2, (screen_height - window_height) / 2);
+	glutPositionWindow((screen_width - win_width) / 2, (screen_height - win_height) / 2);
 
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
@@ -255,59 +251,19 @@ void renderer_t::start(int width, int height)
 
 	imgui_glut_init();
 
-	renderer_state = renderer_state_t::init;
+	win_ready = true;
 
-	sig_renderer_start(window_width, window_height);
-
-	renderer_state = renderer_state_t::busy;
+	sig_win_create(win_width, win_height);
 
 	glutMainLoop();
 
-	renderer_state = renderer_state_t::idle;
+	win_ready = win_halt = false;
 
-	sig_renderer_stop();
+	sig_win_destroy();
 }
 
-void renderer_t::stop()
+void render_win_t::destroy()
 {
-	if(renderer_state_t::busy == renderer_state)
-	{
-		renderer_state = renderer_state_t::halt;
-	}
-}
-
-void renderer_t::set_bg_color(int bg_color)
-{
-	if(renderer_state_t::init == renderer_state || renderer_state_t::busy == renderer_state)
-	{
-		int red = bg_color >> 16;
-		int green = (bg_color & 0x00FF00) >> 8;
-		int blue = (bg_color & 0x0000FF);
-
-		glClearColor(red / 255.0, green / 255.0, blue / 255.0, 1.0);
-	}
-}
-
-void renderer_t::set_title(const char* title)
-{
-	if(renderer_state_t::init == renderer_state || renderer_state_t::busy == renderer_state)
-	{
-		glutSetWindowTitle(title);
-	}
-}
-
-void renderer_t::toggle_vsync(bool on)
-{
-	if(renderer_state_t::init == renderer_state || renderer_state_t::busy == renderer_state)
-	{
-	#ifdef __APPLE__
-		GLint swap_interval = on? 1 : 0;
-		CGLContextObj ctx = CGLGetCurrentContext();
-
-		if(ctx)
-		{
-			CGLSetParameter(ctx, kCGLCPSwapInterval, &swap_interval);
-		}
-	#endif
-	}
+	win_ready = false;
+	win_halt = true;
 }

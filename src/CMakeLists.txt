@@ -38,11 +38,6 @@ set(EXTRA_LIBS ${EXTRA_LIBS} ${FREEIMAGE_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${FREEGLUT_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
-if(APPLE)
-find_package(OpenGL REQUIRED)
-set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
-endif()
-
 include_directories(${Boost_INCLUDE_DIR})
 
 include_directories($ENV{OPENSSL_ROOT_DIR}/include)
