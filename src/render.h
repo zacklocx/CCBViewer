@@ -38,17 +38,9 @@ class render_cmd_t
 public:
 	int size() const { return (int)array_.size(); }
 
-	render_obj_t& operator[](int i) { return array_[i]; }
 	const render_obj_t& operator[](int i) const { return array_[i]; }
 
 	void add(const render_obj_t& obj) { array_.emplace_back(obj); }
-
-	bool insert(int i, const render_obj_t& obj)
-	{ bool ret = i >= 0 && i <= (int)array_.size(); if(ret) array_.insert(array_.begin() + i, obj); return ret; }
-
-	bool remove(int i)
-	{ bool ret = i >= 0 && i < (int)array_.size(); if(ret) array_.erase(array_.begin() + i); return ret; }
-
 	void clear() { array_.clear(); }
 
 private:
