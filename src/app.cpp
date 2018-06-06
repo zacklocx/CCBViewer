@@ -98,8 +98,6 @@ namespace
 
 			demo.set_x(x);
 			demo.set_y(y);
-
-			render_cmd.add(demo);
 		}
 		catch(...)
 		{
@@ -125,8 +123,9 @@ namespace
 
 	void on_render()
 	{
+		render_cmd.add(demo);
 		render(render_cmd);
-		//render_cmd.clear();
+		render_cmd.clear();
 
 		fps();
 	}
