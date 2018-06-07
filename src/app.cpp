@@ -41,7 +41,7 @@ namespace
 
 	demo_t demo;
 
-	void render(demo_t d)
+	void render(const demo_t& d)
 	{
 		glPushMatrix();
 		glLoadIdentity();
