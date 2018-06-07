@@ -1,5 +1,7 @@
 project(CCBViewer)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 set(APP_NAME ${PROJECT_NAME})
 
 set(APP_VERSION_MAJOR 0)
