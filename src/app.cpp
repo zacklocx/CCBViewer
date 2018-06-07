@@ -12,11 +12,10 @@
 
 #include "app_config.h"
 
+#include "thread.h"
+#include "render.h"
 #include "render_win.h"
 #include "line_logger.h"
-#include "scoped_thread.h"
-
-#include "render.h"
 
 namespace
 {
@@ -112,8 +111,7 @@ namespace
 	{
 		LLOG("on_create") << width << " " << height;
 
-		scoped_thread_t logic_thread(std::thread([]() { while(render_win_t::ready()) on_update(); }),
-			scoped_thread_t::action::detach);
+		thread_t<thread_exec_t::detach> logic_thread([]() { while(render_win_t::ready()) on_update(); });
 	}
 
 	void on_destroy()
