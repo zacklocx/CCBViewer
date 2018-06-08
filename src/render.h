@@ -6,13 +6,13 @@
 #include <memory>
 #include <utility>
 
-template <typename T>
+template<typename T>
 void render(const T&) {}
 
 class render_obj_t
 {
 public:
-	template <typename T>
+	template<typename T>
 	render_obj_t(T t) : self_(std::make_shared<model_t<T>>(std::move(t))) {}
 
 private:
@@ -22,7 +22,7 @@ private:
 		virtual void render_() const = 0;
 	};
 
-	template <typename T>
+	template<typename T>
 	struct model_t : concept_t
 	{
 		model_t(T t) : data_(std::move(t)) {}
