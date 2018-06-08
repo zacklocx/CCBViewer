@@ -6,6 +6,9 @@
 #include <memory>
 #include <utility>
 
+template <typename T>
+void render(const T&) {}
+
 class render_obj_t
 {
 public:
@@ -16,14 +19,14 @@ private:
 	struct concept_t
 	{
 		virtual ~concept_t() {}
-		virtual void render_() const = 0;
+		virtual void render() const = 0;
 	};
 
 	template <typename T>
 	struct model_t : concept_t
 	{
 		model_t(T t) : data_(std::move(t)) {}
-		void render_() const { render(data_); }
+		void render() const { ::render(data_); }
 
 		T data_;
 	};
@@ -38,19 +41,16 @@ class render_cmd_t
 public:
 	int size() const { return (int)array_.size(); }
 
-	const render_obj_t& operator[](int i) const { return array_[i]; }
-
 	void add(const render_obj_t& obj) { array_.emplace_back(obj); }
 	void clear() { array_.clear(); }
 
 private:
 	std::vector<render_obj_t> array_;
+
+	friend void render(const render_cmd_t&);
 };
 
-template <typename T>
-void render(const T&) {}
-
-inline void render(const render_obj_t& obj) { obj.self_->render_(); }
-inline void render(const render_cmd_t& cmd) { int n = cmd.size(); for(int i = 0; i < n; ++i) render(cmd[i]); }
+inline void render(const render_obj_t& obj) { obj.self_->render(); }
+inline void render(const render_cmd_t& cmd) { for(const auto& obj : cmd.array_) render(obj); }
 
 #endif /* RENDER_INCLUDED */
