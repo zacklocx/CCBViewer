@@ -19,38 +19,25 @@ private:
 	struct concept_t
 	{
 		virtual ~concept_t() {}
-		virtual void render() const = 0;
+		virtual void render_() const = 0;
 	};
 
 	template <typename T>
 	struct model_t : concept_t
 	{
 		model_t(T t) : data_(std::move(t)) {}
-		void render() const { ::render(data_); }
+		void render_() const { render(data_); }
 
 		T data_;
 	};
 
 	std::shared_ptr<const concept_t> self_;
 
-	friend void render(const render_obj_t&);
+	friend void render(const render_obj_t& obj) { obj.self_->render_(); }
 };
 
-class render_cmd_t
-{
-public:
-	int size() const { return (int)array_.size(); }
+using render_cmd_t = std::vector<render_obj_t>;
 
-	void add(const render_obj_t& obj) { array_.emplace_back(obj); }
-	void clear() { array_.clear(); }
-
-private:
-	std::vector<render_obj_t> array_;
-
-	friend void render(const render_cmd_t&);
-};
-
-inline void render(const render_obj_t& obj) { obj.self_->render(); }
-inline void render(const render_cmd_t& cmd) { for(const auto& obj : cmd.array_) render(obj); }
+inline void render(const render_cmd_t& cmd) { for(const auto& obj : cmd) render(obj); }
 
 #endif /* RENDER_INCLUDED */
