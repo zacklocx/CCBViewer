@@ -7,7 +7,6 @@
 
 #include <boost/bind.hpp>
 
-#include <GL/freeglut.h>
 #include <json/json.h>
 
 #include "app_config.h"
@@ -17,50 +16,17 @@
 #include "render_win.h"
 #include "line_logger.h"
 
+#include "a.h"
+#include "demo.h"
+
 namespace
 {
-	render_cmd_t render_cmd;
+	render_cmd_t root_cmd;
 
 	std::mutex e_mutex;
 	std::exception_ptr e_ptr = nullptr;
 
-	class demo_t
-	{
-	public:
-		demo_t() : x_(0.0f), y_(0.0f) {}
-
-		void set_x(float x) { x_ = x; }
-		void set_y(float y) { y_ = y; }
-
-		float get_x() const { return x_; }
-		float get_y() const { return y_; }
-
-	private:
-		float x_, y_;
-	};
-
 	demo_t demo;
-
-	void render(const demo_t& d)
-	{
-		glPushMatrix();
-		glLoadIdentity();
-
-		glColor3ub(255, 0, 0);
-
-		glBegin(GL_TRIANGLES);
-
-		int width = render_win_t::width();
-		int height = render_win_t::height();
-
-		glVertex2f(0, 0);
-		glVertex2f(d.get_x(), d.get_y());
-		glVertex2f(width - 1, height - 1);
-
-		glEnd();
-
-		glPopMatrix();
-	}
 
 	void fps()
 	{
@@ -95,8 +61,8 @@ namespace
 				throw std::logic_error("x is bigger than 1000");
 			}
 
-			demo.set_x(x);
-			demo.set_y(y);
+			// demo.set_x(x);
+			// demo.set_y(y);
 		}
 		catch(...)
 		{
@@ -121,9 +87,20 @@ namespace
 
 	void on_render()
 	{
-		render_cmd.add(demo);
-		render(render_cmd);
-		render_cmd.clear();
+		a_ns::a_t a;
+
+		// render(1);
+		// render(std::string("string"));
+		// render(a);
+		// render(demo);
+
+		root_cmd.emplace_back(1);
+		root_cmd.emplace_back(std::string("string"));
+		root_cmd.emplace_back(a);
+		root_cmd.emplace_back(demo);
+
+		render(root_cmd);
+		root_cmd.clear();
 
 		fps();
 	}
