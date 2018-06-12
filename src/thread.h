@@ -11,9 +11,9 @@ template<thread_exec_t>
 class thread_t
 {
 public:
-	template<class Func, class... Args>
-	thread_t(Func&& func, Args&&... args)
-		: thread_(std::forward<Func>(func), std::forward<Args>(args)...)
+	template<class F, class... Args>
+	thread_t(F&& f, Args&&... args)
+		: thread_(std::forward<F>(f), std::forward<Args>(args)...)
 	{}
 
 	thread_t(const thread_t&) = delete;
