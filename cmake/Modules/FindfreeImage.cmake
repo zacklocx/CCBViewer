@@ -15,19 +15,13 @@ find_path(FREEIMAGE_INCLUDE_DIR FreeImage.h
 find_library(FREEIMAGE_LIBRARY NAMES freeimage libfreeimage
              HINTS ${PC_FREEIMAGE_LIBDIR} ${PC_FREEIMAGE_LIBRARY_DIRS})
 
-find_library(FREEIMAGE_PLUS_LIBRARY NAMES freeimageplus libfreeimageplus
-             HINTS ${PC_FREEIMAGE_LIBDIR} ${PC_FREEIMAGE_LIBRARY_DIRS})
-
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set FREEIMAGE_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(freeimage DEFAULT_MSG
                                   FREEIMAGE_LIBRARY FREEIMAGE_INCLUDE_DIR)
 
-find_package_handle_standard_args(freeimageplus DEFAULT_MSG
-                                  FREEIMAGE_PLUS_LIBRARY FREEIMAGE_INCLUDE_DIR)
+mark_as_advanced(FREEIMAGE_INCLUDE_DIR FREEIMAGE_LIBRARY)
 
-mark_as_advanced(FREEIMAGE_INCLUDE_DIR FREEIMAGE_LIBRARY FREEIMAGE_PLUS_LIBRARY)
-
-set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARY} ${FREEIMAGE_PLUS_LIBRARY})
+set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARY})
 set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_INCLUDE_DIR})
