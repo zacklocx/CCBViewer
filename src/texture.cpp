@@ -1,4 +1,4 @@
 
 #include "texture.h"
 
-#include <FreeImagePlus.h>
+#include <FreeImage.h>
