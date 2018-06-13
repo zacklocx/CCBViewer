@@ -11,7 +11,7 @@ template<thread_exec_t>
 class thread_t
 {
 public:
-	template<class F, class... Args>
+	template<typename F, typename... Args>
 	thread_t(F&& f, Args&&... args)
 		: thread_(std::forward<F>(f), std::forward<Args>(args)...)
 	{}
