@@ -14,6 +14,8 @@ boost::signals2::signal<void()> sig_win_render;
 
 namespace
 {
+	enum class win_state_t { halted, working, halting };
+
 	struct mouse_state_t
 	{
 		mouse_state_t() : x_(0), y_(0), btn_(-1) {}
@@ -21,19 +23,15 @@ namespace
 		int x_, y_, btn_;
 	};
 
-	bool win_ready = false;
-	bool win_halt = false;
-
 	int win_width = 0;
 	int win_height = 0;
+
+	win_state_t win_state = win_state_t::halted;
 
 	mouse_state_t mouse_state;
 
 	void stop()
 	{
-		win_ready = false;
-		win_halt = true;
-
 		imgui_glut_shutdown();
 		glutLeaveMainLoop();
 	}
@@ -54,7 +52,7 @@ namespace
 
 	void display()
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BITS);
 
 		imgui_glut_prepare(win_width, win_height);
 
@@ -68,7 +66,7 @@ namespace
 
 	void idle()
 	{
-		if(win_halt)
+		if(win_state_t::halting == win_state)
 		{
 			stop();
 			return;
@@ -81,7 +79,7 @@ namespace
 	{
 		if(27 /* Escape */ == key)
 		{
-			stop();
+			win_state = win_state_t::halting;
 		}
 		else
 		{
@@ -189,7 +187,7 @@ namespace
 
 bool render_win_t::ready()
 {
-	return win_ready;
+	return win_state_t::working == win_state;
 }
 
 int render_win_t::width()
@@ -251,19 +249,18 @@ void render_win_t::create(int width, int height)
 
 	imgui_glut_init();
 
-	win_ready = true;
+	win_state = win_state_t::working;
 
 	sig_win_create(win_width, win_height);
 
 	glutMainLoop();
 
-	win_ready = win_halt = false;
+	win_state = win_state_t::halted;
 
 	sig_win_destroy();
 }
 
 void render_win_t::destroy()
 {
-	win_ready = false;
-	win_halt = true;
+	win_state = win_state_t::halting;
 }
