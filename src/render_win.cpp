@@ -52,7 +52,7 @@ namespace
 
 	void display()
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BITS);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		imgui_glut_prepare(win_width, win_height);
 
@@ -229,7 +229,8 @@ void render_win_t::create(int width, int height)
 	win_width = (width > 0)? width : screen_width;
 	win_height = (height > 0)? height : screen_height;
 
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+	// glutInitDisplayString( "rgba depth double samples>=8 stencil");
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	glutInitWindowSize(win_width, win_height);
@@ -248,6 +249,10 @@ void render_win_t::create(int width, int height)
 	glutMotionFunc(mouse_drag);
 
 	imgui_glut_init();
+
+	int i;
+	glGetIntegerv(GL_STENCIL_BITS, &i);
+	std::cout<<"GL_STENCIL_BITS: "<<i<<std::endl;
 
 	win_state = win_state_t::working;
 
