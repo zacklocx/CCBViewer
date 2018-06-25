@@ -230,7 +230,6 @@ void render_win_t::create(int width, int height)
 	win_height = (height > 0)? height : screen_height;
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
-	// glutInitDisplayString( "rgba depth double samples>=8 stencil");
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	glutInitWindowSize(win_width, win_height);
