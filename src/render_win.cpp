@@ -3,6 +3,7 @@
 
 #include <cctype>
 
+#include <GL/glew.h>
 #include <GL/freeglut.h>
 
 #include "imgui.h"
@@ -246,6 +247,10 @@ void render_win_t::create(int width, int height)
 	glutMouseFunc(mouse_click);
 	glutPassiveMotionFunc(mouse_move);
 	glutMotionFunc(mouse_drag);
+
+	// glutInitContextVersion (4,1);
+	// glutInitContextProfile (GLUT_CORE_PROFILE );
+	// glutInitContextFlags(GLUT_DEBUG);
 
 	imgui_glut_init();
 
