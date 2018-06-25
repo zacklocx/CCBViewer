@@ -249,10 +249,6 @@ void render_win_t::create(int width, int height)
 
 	imgui_glut_init();
 
-	int i;
-	glGetIntegerv(GL_STENCIL_BITS, &i);
-	std::cout<<"GL_STENCIL_BITS: "<<i<<std::endl;
-
 	win_state = win_state_t::working;
 
 	sig_win_create(win_width, win_height);
