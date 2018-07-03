@@ -13,7 +13,9 @@ class render_obj_t
 {
 public:
 	template<typename T>
-	render_obj_t(T t) : self_(std::make_shared<model_t<T>>(std::move(t))) {}
+	render_obj_t(T t)
+		: self_(std::make_shared<model_t<T>>(std::move(t)))
+	{}
 
 private:
 	struct concept_t
