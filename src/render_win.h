@@ -16,11 +16,11 @@ public:
 	static int mouse_y();
 	static int mouse_btn();
 
-	static void create(int width, int height);
+	static void create(int width, int height, const char*);
 	static void destroy();
 };
 
-extern boost::signals2::signal<void(int, int)> sig_win_create;
+extern boost::signals2::signal<void(int, int, const char*)> sig_win_create;
 extern boost::signals2::signal<void()> sig_win_destroy;
 extern boost::signals2::signal<void()> sig_win_render;
 

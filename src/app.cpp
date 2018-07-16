@@ -73,9 +73,9 @@ namespace
 		}
 	}
 
-	void on_create(int width, int height)
+	void on_create(int width, int height, const char* title)
 	{
-		LLOG("on_create") << width << " " << height;
+		LLOG("on_create") << width << " " << height << " " << title;
 
 		thread_t<thread_exec_t::detach> logic_thread([]() { while(render_win_t::ready()) on_update(); });
 	}
@@ -110,11 +110,11 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		sig_win_create.connect(boost::bind(on_create, _1, _2));
+		sig_win_create.connect(boost::bind(on_create, _1, _2, _3));
 		sig_win_destroy.connect(boost::bind(on_destroy));
 		sig_win_render.connect(boost::bind(on_render));
 
-		render_win_t::create(1334, 750);
+		render_win_t::create(1334, 750, "zacklocx");
 
 		if(e_ptr)
 		{

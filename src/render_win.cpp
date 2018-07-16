@@ -2,6 +2,8 @@
 #include "render_win.h"
 
 #include <cctype>
+#include <cstdio>
+#include <cstdlib>
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -9,7 +11,7 @@
 #include "imgui.h"
 #include "imgui_glut.h"
 
-boost::signals2::signal<void(int, int)> sig_win_create;
+boost::signals2::signal<void(int, int, const char*)> sig_win_create;
 boost::signals2::signal<void()> sig_win_destroy;
 boost::signals2::signal<void()> sig_win_render;
 
@@ -24,10 +26,10 @@ namespace
 		int x_, y_, btn_;
 	};
 
+	win_state_t win_state = win_state_t::halted;
+
 	int win_width = 0;
 	int win_height = 0;
-
-	win_state_t win_state = win_state_t::halted;
 
 	mouse_state_t mouse_state;
 
@@ -58,8 +60,6 @@ namespace
 		imgui_glut_prepare(win_width, win_height);
 
 		sig_win_render();
-
-		// ImGui::ShowTestWindow();
 		ImGui::Render();
 
 		glutSwapBuffers();
@@ -67,13 +67,7 @@ namespace
 
 	void idle()
 	{
-		if(win_state_t::halting == win_state)
-		{
-			stop();
-			return;
-		}
-
-		display();
+		(win_state != win_state_t::halting)? display() : stop();
 	}
 
 	void normal_key_down(unsigned char key, int x, int y)
@@ -144,25 +138,10 @@ namespace
 			mouse_state.btn_ = left_btn? 0 : right_btn? 1 : -1;
 
 			ImGuiIO& io = ImGui::GetIO();
+
 			io.MousePos = ImVec2(x, y);
-
-			if(left_btn && GLUT_DOWN == state)
-			{
-				io.MouseDown[0] = true;
-			}
-			else
-			{
-				io.MouseDown[0] = false;
-			}
-
-			if(right_btn == btn && GLUT_DOWN == state)
-			{
-				io.MouseDown[1] = true;
-			}
-			else
-			{
-				io.MouseDown[1] = false;
-			}
+			io.MouseDown[0] = left_btn && GLUT_DOWN == state;
+			io.MouseDown[1] = right_btn && GLUT_DOWN == state;
 		}
 	}
 
@@ -216,7 +195,7 @@ int render_win_t::mouse_btn()
 	return mouse_state.btn_;
 }
 
-void render_win_t::create(int width, int height)
+void render_win_t::create(int width, int height, const char* title)
 {
 	int argc = 1;
 	char _[] = "";
@@ -224,18 +203,35 @@ void render_win_t::create(int width, int height)
 
 	glutInit(&argc, argv);
 
+	glutInitContextVersion(4, 1);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
+	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
+
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+
 	int screen_width = glutGet(GLUT_SCREEN_WIDTH);
 	int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 
 	win_width = (width > 0)? width : screen_width;
 	win_height = (height > 0)? height : screen_height;
 
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+	title = (title != nullptr)? title : "";
 
 	glutInitWindowSize(win_width, win_height);
-	glutCreateWindow("");
+	glutCreateWindow(title);
 	glutPositionWindow((screen_width - win_width) / 2, (screen_height - win_height) / 2);
+
+	GLenum err = glewInit();
+
+	if(err != GLEW_OK)
+	{
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+		exit(EXIT_FAILURE);
+	}
+
+	imgui_glut_init();
 
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
@@ -248,15 +244,9 @@ void render_win_t::create(int width, int height)
 	glutPassiveMotionFunc(mouse_move);
 	glutMotionFunc(mouse_drag);
 
-	// glutInitContextVersion (4,1);
-	// glutInitContextProfile (GLUT_CORE_PROFILE );
-	// glutInitContextFlags(GLUT_DEBUG);
-
-	imgui_glut_init();
-
 	win_state = win_state_t::working;
 
-	sig_win_create(win_width, win_height);
+	sig_win_create(win_width, win_height, title);
 
 	glutMainLoop();
 
