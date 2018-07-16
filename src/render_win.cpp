@@ -67,7 +67,7 @@ namespace
 
 	void idle()
 	{
-		(win_state != win_state_t::halting)? display() : stop();
+		(win_state != win_state_t::halting)? glutPostRedisplay() : stop();
 	}
 
 	void normal_key_down(unsigned char key, int x, int y)
