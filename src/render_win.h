@@ -16,7 +16,7 @@ public:
 	static int mouse_y();
 	static int mouse_btn();
 
-	static void create(int width, int height, const char*);
+	static void create(int width, int height, const char* title);
 	static void destroy();
 };
 
