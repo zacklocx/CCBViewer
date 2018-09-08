@@ -9,12 +9,14 @@
 
 #include <json/json.h>
 
-#include "app_config.h"
+#include "app_info.h"
 
+#include "json.h"
+#include "utils.h"
 #include "thread.h"
 #include "render.h"
 #include "render_win.h"
-#include "line_logger.h"
+#include "llog.h"
 
 #include "a.h"
 #include "demo.h"
@@ -110,16 +112,39 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		sig_win_create.connect(boost::bind(on_create, _1, _2, _3));
-		sig_win_destroy.connect(boost::bind(on_destroy));
-		sig_win_render.connect(boost::bind(on_render));
+		// LLOG() << md5("123");
 
-		render_win_t::create(1334, 750, "zacklocx");
+		// Json::Value jval;
 
-		if(e_ptr)
-		{
-			std::rethrow_exception(e_ptr);
-		}
+		// if(!jparse("{\"value1\" : true, \"value2\" : false, \"value3\" : 3.14, \"value4\":\"bad\"}", jval))
+		// {
+		// 	LLOG() << "malformed json";
+		// }
+		// else
+		// {
+		// 	if(jtob(jquery(jval, "value2")))
+		// 	{
+		// 		LLOG("true");
+		// 	}
+		// 	else
+		// 	{
+		// 		LLOG("false");
+		// 	}
+
+		// 	LLOG() << jtof(jquery(jval, "value3"));
+		// 	LLOG() << jtos(jquery(jval, "value3"));
+		// }
+
+	// 	sig_win_create.connect(boost::bind(on_create, _1, _2, _3));
+	// 	sig_win_destroy.connect(boost::bind(on_destroy));
+	// 	sig_win_render.connect(boost::bind(on_render));
+
+	// 	render_win_t::create(1334, 750, "zacklocx");
+
+	// 	if(e_ptr)
+	// 	{
+	// 		std::rethrow_exception(e_ptr);
+	// 	}
 	}
 	catch(std::exception& e)
 	{

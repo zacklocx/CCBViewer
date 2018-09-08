@@ -8,12 +8,12 @@ set(APP_VERSION_MAJOR 0)
 set(APP_VERSION_MINOR 1)
 set(APP_VERSION_BUILD 1)
 
-set(APP_DEBUG 1)
-
 configure_file(
-	"${PROJECT_SOURCE_DIR}/app_config.h.in"
-	"${PROJECT_SOURCE_DIR}/app_config.h"
+	"${PROJECT_SOURCE_DIR}/app_info.h.in"
+	"${PROJECT_SOURCE_DIR}/app_info.h"
 )
+
+add_definitions(-DAPP_DEBUG)
 
 add_definitions(-DSOCI_USE_BOOST)
 add_definitions(-DAVHTTP_ENABLE_ZLIB)

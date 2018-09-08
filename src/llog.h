@@ -1,6 +1,6 @@
 
-#ifndef LINE_LOGGER_INCLUDED
-#define LINE_LOGGER_INCLUDED
+#ifndef LLOG_INCLUDED
+#define LLOG_INCLUDED
 
 #include <string>
 #include <iostream>
@@ -12,16 +12,16 @@
 #include <iomanip>
 #endif
 
-class line_logger_t
+class llog_t
 {
 public:
-	line_logger_t(const std::string& tag = "", std::ostream& out = std::cout)
+	llog_t(const std::string& tag = "", std::ostream& out = std::cout)
 	#ifdef APP_DEBUG
 		: tag_(tag), out_(out)
 	#endif
 	{}
 
-	~line_logger_t()
+	~llog_t()
 	{
 	#ifdef APP_DEBUG
 		stream_ << "\n";
@@ -48,7 +48,7 @@ public:
 	}
 
 	template<typename T>
-	line_logger_t& operator <<(const T& t)
+	llog_t& operator <<(const T& t)
 	{
 	#ifdef APP_DEBUG
 		stream_ << t;
@@ -65,6 +65,6 @@ private:
 #endif
 };
 
-#define LLOG line_logger_t
+#define LLOG llog_t
 
-#endif /* LINE_LOGGER_INCLUDED */
+#endif /* LLOG_INCLUDED */

@@ -4,10 +4,8 @@
 #include <cstdio>
 
 #include <chrono>
-#include <vector>
 #include <sstream>
 #include <iomanip>
-#include <iostream>
 
 #include <openssl/md5.h>
 
@@ -56,7 +54,7 @@ std::string md5(const std::string& s)
 
 	for(int i = 0; i < MD5_DIGEST_LENGTH; ++i)
 	{
-		sprintf(ret + i * 2, "%02X", digest[i]);
+		sprintf(ret + i * 2, "%02x", digest[i]);
 	}
 
 	return ret;
@@ -88,173 +86,4 @@ std::string urlencode(const std::string& s)
 	}
 
 	return ret.str();
-}
-
-Json::Value query_json(const Json::Value& json, const std::string& query)
-{
-	std::string s;
-	std::vector<std::string> sv;
-	std::istringstream ss(query);
-
-	while(std::getline(ss, s, '.'))
-	{
-		sv.push_back(s);
-	}
-
-	const Json::Value* ret = &json;
-
-	for(const auto& it : sv)
-	{
-		if(ret->isArray())
-		{
-			ret = &(*ret)[std::stoi(it)];
-		}
-		else
-		{
-			ret = &(*ret)[it];
-		}
-
-		if(ret->isNull())
-		{
-			break;
-		}
-	}
-
-	return *ret;
-}
-
-bool jtob(const Json::Value& json)
-{
-	bool ret = false;
-
-	if(json.isBool())
-	{
-		ret = json.asBool();
-	}
-	else if(json.isIntegral())
-	{
-		ret = json.asInt() != 0;
-	}
-
-	return ret;
-}
-
-std::string jtos(const Json::Value& json)
-{
-	std::string ret = "";
-
-	if(json.isString())
-	{
-		ret = json.asString();
-	}
-	else if(json.isInt())
-	{
-		ret = std::to_string(json.asInt64());
-	}
-	else if(json.isUInt())
-	{
-		ret = std::to_string(json.asUInt64());
-	}
-	else if(json.isDouble())
-	{
-		ret = std::to_string(json.asDouble());
-	}
-
-	return ret;
-}
-
-int jtoi(const Json::Value& json)
-{
-	int ret = 0;
-
-	if(json.isString())
-	{
-		ret = std::stoi(json.asString());
-	}
-	else if(json.isInt())
-	{
-		ret = json.asInt();
-	}
-
-	return ret;
-}
-
-unsigned int jtou(const Json::Value& json)
-{
-	unsigned int ret = 0;
-
-	if(json.isString())
-	{
-		ret = std::stoul(json.asString());
-	}
-	else if(json.isUInt())
-	{
-		ret = json.asUInt();
-	}
-
-	return ret;
-}
-
-int64_t jtoi64(const Json::Value& json)
-{
-	int64_t ret = 0;
-
-	if(json.isString())
-	{
-		ret = std::stoll(json.asString());
-	}
-	else if(json.isInt())
-	{
-		ret = json.asInt64();
-	}
-
-	return ret;
-}
-
-uint64_t jtou64(const Json::Value& json)
-{
-	uint64_t ret = 0;
-
-	if(json.isString())
-	{
-		ret = std::stoull(json.asString());
-	}
-	else if(json.isUInt())
-	{
-		ret = json.asUInt64();
-	}
-
-	return ret;
-}
-
-float jtof(const Json::Value& json)
-{
-	float ret = 0.0f;
-
-	if(json.isString())
-	{
-		ret = std::stof(json.asString());
-	}
-	else if(json.isDouble())
-	{
-		ret = json.asFloat();
-	}
-
-	return ret;
-}
-
-double jtod(const Json::Value& json)
-{
-	double ret = 0.0;
-
-	if(json.isString())
-	{
-		ret = std::stod(json.asString());
-	}
-	else if(json.isDouble())
-	{
-		ret = json.asDouble();
-	}
-
-	return ret;
 }
