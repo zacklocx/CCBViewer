@@ -13,8 +13,6 @@ using jtype = Json::Value;
 using jref = jtype&;
 using cjref = const jtype&;
 
-#define jnull jtype::nullSingleton()
-
 bool jload(csref path, jref jval);
 bool jsave(csref path, cjref jval);
 

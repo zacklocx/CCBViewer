@@ -45,7 +45,7 @@ bool jsave(csref path, cjref jval)
 
 jtype jparse(csref str)
 {
-	jtype ret = jnull;
+	jtype ret;
 
 	Json::CharReaderBuilder builder;
 	builder["collectComments"] = false;
