@@ -5,276 +5,238 @@
 #include <memory>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
-bool jload(const std::string& path, jvalue& jval)
+namespace
 {
-	std::ifstream file(path);
-
-	bool ret = !file.fail();
-
-	if(ret)
+	bool jread(std::istream& in, jvalue_t& val)
 	{
 		Json::CharReaderBuilder builder;
 		builder["collectComments"] = false;
 
 		JSONCPP_STRING err;
-		ret = parseFromStream(builder, file, &jval, &err);
+		return parseFromStream(builder, in, &val, &err);
 	}
 
-	return ret;
-}
-
-bool jsave(const std::string& path, const jvalue& jval)
-{
-	std::ofstream file(path);
-
-	bool ret = !file.fail();
-
-	if(ret)
+	bool jwrite(std::ostream& out, const jvalue_t& val)
 	{
 		Json::StreamWriterBuilder builder;
 		builder["commentStyle"] = "None";
-		builder["indentation"] = "";
+		builder["indentation"] = "\t";
 
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-		ret = writer->write(jval, &file);
+		return writer->write(val, &out);
 	}
 
-	return ret;
+	const jvalue_t& jquery(const jvalue_t& val, const std::string& query)
+	{
+		std::string s;
+		std::vector<std::string> sv;
+		std::istringstream ss(query);
+
+		while(std::getline(ss, s, '.'))
+		{
+			sv.push_back(s);
+		}
+
+		const jvalue_t* target = &val;
+
+		for(const auto& it : sv)
+		{
+			if(target->isArray())
+			{
+				target = &(*target)[std::stoi(it)];
+			}
+			else
+			{
+				target = &(*target)[it];
+			}
+
+			if(target->isNull())
+			{
+				break;
+			}
+		}
+
+		return *target;
+	}
 }
 
-jvalue jparse(const std::string& str)
+bool jload(const std::string& path, jvalue_t& val)
 {
-	jvalue ret;
-
-	Json::CharReaderBuilder builder;
-	builder["collectComments"] = false;
-
-	JSONCPP_STRING err;
-	std::unique_ptr<Json::CharReader> const reader(builder.newCharReader());
-	reader->parse(str.data(), str.data() + str.size(), &ret, &err);
-
-	return ret;
+	std::ifstream f(path);
+	return jread(f, val);
 }
 
-std::string jdump(const jvalue& jval, bool indent)
+bool jsave(const std::string& path, const jvalue_t& val)
+{
+	std::ofstream f(path);
+	return jwrite(f, val);
+}
+
+jvalue_t jparse(const std::string& str)
+{
+	std::istringstream ss(str);
+	jvalue_t val;
+	jread(ss, val);
+
+	return val;
+}
+
+std::string jdump(const jvalue_t& val)
 {
 	std::ostringstream ss;
-
-	Json::StreamWriterBuilder builder;
-	builder["commentStyle"] = "None";
-	builder["indentation"] = indent? "\t" : "";
-
-	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-	writer->write(jval, &ss);
+	jwrite(ss, val);
 
 	return ss.str();
 }
 
-jvalue jquery(const jvalue& jval, const std::string& query)
+jvalue_t jget(const jvalue_t& val, const std::string& query)
 {
-	std::string s;
-	std::vector<std::string> sv;
-	std::istringstream ss(query);
-
-	while(std::getline(ss, s, '.'))
-	{
-		sv.push_back(s);
-	}
-
-	const jvalue* ret = &jval;
-
-	for(const auto& it : sv)
-	{
-		if(ret->isArray())
-		{
-			ret = &(*ret)[std::stoi(it)];
-		}
-		else
-		{
-			ret = &(*ret)[it];
-		}
-
-		if(ret->isNull())
-		{
-			break;
-		}
-	}
-
-	return *ret;
+	return jquery(val, query);
 }
 
-jvalue jupdate(jvalue& jval, const std::string& query, const jvalue& new_jval)
+void jset(jvalue_t& val, const std::string& query, const jvalue_t& v)
 {
-	std::string s;
-	std::vector<std::string> sv;
-	std::istringstream ss(query);
+	jvalue_t& target = const_cast<jvalue_t&>(jquery(val, query));
 
-	while(std::getline(ss, s, '.'))
+	if(!target.isNull())
 	{
-		sv.push_back(s);
+		target = v;
 	}
-
-	jvalue* old_jval = &jval;
-
-	for(const auto& it : sv)
-	{
-		if(old_jval->isArray())
-		{
-			old_jval = &(*old_jval)[std::stoi(it)];
-		}
-		else
-		{
-			old_jval = &(*old_jval)[it];
-		}
-
-		if(old_jval->isNull())
-		{
-			break;
-		}
-	}
-
-	jvalue ret = *old_jval;
-
-	if(!old_jval->isNull())
-	{
-		*old_jval = new_jval;
-	}
-
-	return ret;
 }
 
-bool jtob(const jvalue& jval)
+bool jtob(const jvalue_t& val)
 {
 	bool ret = false;
 
-	if(jval.isBool())
+	if(val.isBool())
 	{
-		ret = jval.asBool();
+		ret = val.asBool();
 	}
-	else if(jval.isIntegral())
+	else if(val.isIntegral())
 	{
-		ret = jval.asInt() != 0;
+		ret = val.asInt() != 0;
 	}
 
 	return ret;
 }
 
-std::string jtos(const jvalue& jval)
+std::string jtos(const jvalue_t& val)
 {
 	std::string ret = "";
 
-	if(jval.isBool() || jval.isString())
+	if(val.isBool() || val.isString())
 	{
-		ret = jval.asString();
+		ret = val.asString();
 	}
-	else if(jval.isInt())
+	else if(val.isInt())
 	{
-		ret = std::to_string(jval.asInt64());
+		ret = std::to_string(val.asInt64());
 	}
-	else if(jval.isUInt())
+	else if(val.isUInt())
 	{
-		ret = std::to_string(jval.asUInt64());
+		ret = std::to_string(val.asUInt64());
 	}
-	else if(jval.isDouble())
+	else if(val.isDouble())
 	{
-		ret = std::to_string(jval.asDouble());
+		ret = std::to_string(val.asDouble());
 	}
 
 	return ret;
 }
 
-int jtoi(const jvalue& jval)
+int jtoi(const jvalue_t& val)
 {
 	int ret = 0;
 
-	if(jval.isString())
+	if(val.isString())
 	{
-		ret = std::stol(jval.asString());
+		ret = std::stol(val.asString());
 	}
-	else if(jval.isInt())
+	else if(val.isInt())
 	{
-		ret = jval.asInt();
+		ret = val.asInt();
 	}
 
 	return ret;
 }
 
-unsigned int jtou(const jvalue& jval)
+unsigned int jtou(const jvalue_t& val)
 {
 	unsigned int ret = 0;
 
-	if(jval.isString())
+	if(val.isString())
 	{
-		ret = std::stoul(jval.asString());
+		ret = std::stoul(val.asString());
 	}
-	else if(jval.isUInt())
+	else if(val.isUInt())
 	{
-		ret = jval.asUInt();
+		ret = val.asUInt();
 	}
 
 	return ret;
 }
 
-int64_t jtoi64(const jvalue& jval)
+int64_t jtoi64(const jvalue_t& val)
 {
 	int64_t ret = 0;
 
-	if(jval.isString())
+	if(val.isString())
 	{
-		ret = std::stoll(jval.asString());
+		ret = std::stoll(val.asString());
 	}
-	else if(jval.isInt())
+	else if(val.isInt())
 	{
-		ret = jval.asInt64();
+		ret = val.asInt64();
 	}
 
 	return ret;
 }
 
-uint64_t jtou64(const jvalue& jval)
+uint64_t jtou64(const jvalue_t& val)
 {
 	uint64_t ret = 0;
 
-	if(jval.isString())
+	if(val.isString())
 	{
-		ret = std::stoull(jval.asString());
+		ret = std::stoull(val.asString());
 	}
-	else if(jval.isUInt())
+	else if(val.isUInt())
 	{
-		ret = jval.asUInt64();
+		ret = val.asUInt64();
 	}
 
 	return ret;
 }
 
-float jtof(const jvalue& jval)
+float jtof(const jvalue_t& val)
 {
 	float ret = 0.0f;
 
-	if(jval.isString())
+	if(val.isString())
 	{
-		ret = std::stof(jval.asString());
+		ret = std::stof(val.asString());
 	}
-	else if(jval.isDouble())
+	else if(val.isDouble())
 	{
-		ret = jval.asFloat();
+		ret = val.asFloat();
 	}
 
 	return ret;
 }
 
-double jtod(const jvalue& jval)
+double jtod(const jvalue_t& val)
 {
 	double ret = 0.0;
 
-	if(jval.isString())
+	if(val.isString())
 	{
-		ret = std::stod(jval.asString());
+		ret = std::stod(val.asString());
 	}
-	else if(jval.isDouble())
+	else if(val.isDouble())
 	{
-		ret = jval.asDouble();
+		ret = val.asDouble();
 	}
 
 	return ret;

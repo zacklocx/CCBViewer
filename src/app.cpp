@@ -114,23 +114,25 @@ int main(int argc, char** argv)
 	{
 		// LLOG() << md5("123");
 
-		jvalue jval;
+		jvalue_t val;
 
-		if(!jload("./bin/demo.json", jval))
+		if(!jload("./bin/demo.json", val))
 		{
 			LLOG() << "json load failed";
 		}
-		// if(!jparse("{\"value1\" : true, \"value2\" : false, \"value3\" : \"3.14\", \"value4\":\"bad\"}", jval))
+		// if(!jparse("{\"value1\" : true, \"value2\" : false, \"value3\" : \"3.14\", \"value4\":\"bad\"}", val))
 		// {
 		// 	LLOG() << "malformed json";
 		// }
 		else
 		{
-			LLOG("indent false") << jdump(jval, false);
-			LLOG("indent true") << jdump(jval, true);
-			LLOG() << jdump(jquery(jval, "value4"), false);
+			//LLOG() << jtob(jget(val, "value2"));
 
-			if(jtob(jquery(jval, "value2")))
+			LLOG("indent false") << jdump(val);
+			LLOG("indent true") << jdump(val);
+			LLOG("value4") << jdump(jget(val, "value4"));
+
+			if(jtob(jget(val, "value2")))
 			{
 				LLOG("true");
 			}
@@ -139,17 +141,17 @@ int main(int argc, char** argv)
 				LLOG("false");
 			}
 
-			LLOG() << jtos(jval);
-			LLOG() << jtos(jquery(jval, "value1"));
+			LLOG() << jtos(val);
+			LLOG() << jtos(jget(val, "value1"));
 
-			LLOG() << jtoi(jquery(jval, "value3"));
-			LLOG() << jtos(jquery(jval, "value4"));
+			LLOG() << jtoi(jget(val, "value3"));
+			LLOG() << jtos(jget(val, "value4"));
 
-			jupdate(jval, "value3", jvalue(6.28f));
+			jset(val, "value3", 6.28f);
 
-			LLOG() << jdump(jval, false);
+			LLOG() << jdump(val);
 
-			jsave("./bin/demo2.json", jval);
+			jsave("./bin/demo2.json", val);
 		}
 
 	// 	sig_win_create.connect(boost::bind(on_create, _1, _2, _3));

@@ -8,24 +8,24 @@
 
 #include <json/json.h>
 
-using jvalue = Json::Value;
+using jvalue_t = Json::Value;
 
-bool jload(const std::string& path, jvalue& jval);
-bool jsave(const std::string& path, const jvalue& jval);
+bool jload(const std::string& path, jvalue_t& val);
+bool jsave(const std::string& path, const jvalue_t& val);
 
-jvalue jparse(const std::string& str);
-std::string jdump(const jvalue& jval, bool indent);
+jvalue_t jparse(const std::string& str);
+std::string jdump(const jvalue_t& val);
 
-jvalue jquery(const jvalue& jval, const std::string& query);
-jvalue jupdate(jvalue& jval, const std::string& query, const jvalue& new_jval);
+jvalue_t jget(const jvalue_t& val, const std::string& query);
+void jset(jvalue_t& val, const std::string& query, const jvalue_t& v);
 
-bool jtob(const jvalue& jval);
-std::string jtos(const jvalue& jval);
-int jtoi(const jvalue& jval);
-unsigned int jtou(const jvalue& jval);
-int64_t jtoi64(const jvalue& jval);
-uint64_t jtou64(const jvalue& jval);
-float jtof(const jvalue& jval);
-double jtod(const jvalue& jval);
+bool jtob(const jvalue_t& val);
+std::string jtos(const jvalue_t& val);
+int jtoi(const jvalue_t& val);
+unsigned int jtou(const jvalue_t& val);
+int64_t jtoi64(const jvalue_t& val);
+uint64_t jtou64(const jvalue_t& val);
+float jtof(const jvalue_t& val);
+double jtod(const jvalue_t& val);
 
 #endif /* JSON_INCLUDED */
