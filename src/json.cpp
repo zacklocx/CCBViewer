@@ -190,7 +190,7 @@ int jtoi(cjref jval)
 
 	if(jval.isString())
 	{
-		ret = std::stoi(jval.asString());
+		ret = std::stol(jval.asString());
 	}
 	else if(jval.isInt())
 	{
