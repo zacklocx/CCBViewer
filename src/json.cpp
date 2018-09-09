@@ -6,7 +6,7 @@
 #include <sstream>
 #include <fstream>
 
-bool jload(csref path, jref jval)
+bool jload(const std::string& path, jvalue& jval)
 {
 	std::ifstream file(path);
 
@@ -24,7 +24,7 @@ bool jload(csref path, jref jval)
 	return ret;
 }
 
-bool jsave(csref path, cjref jval)
+bool jsave(const std::string& path, const jvalue& jval)
 {
 	std::ofstream file(path);
 
@@ -43,9 +43,9 @@ bool jsave(csref path, cjref jval)
 	return ret;
 }
 
-jtype jparse(csref str)
+jvalue jparse(const std::string& str)
 {
-	jtype ret;
+	jvalue ret;
 
 	Json::CharReaderBuilder builder;
 	builder["collectComments"] = false;
@@ -57,7 +57,7 @@ jtype jparse(csref str)
 	return ret;
 }
 
-stype jdump(cjref jval, bool indent)
+std::string jdump(const jvalue& jval, bool indent)
 {
 	std::ostringstream ss;
 
@@ -71,10 +71,10 @@ stype jdump(cjref jval, bool indent)
 	return ss.str();
 }
 
-jtype jquery(cjref jval, csref query)
+jvalue jquery(const jvalue& jval, const std::string& query)
 {
-	stype s;
-	std::vector<stype> sv;
+	std::string s;
+	std::vector<std::string> sv;
 	std::istringstream ss(query);
 
 	while(std::getline(ss, s, '.'))
@@ -82,7 +82,7 @@ jtype jquery(cjref jval, csref query)
 		sv.push_back(s);
 	}
 
-	const jtype* ret = &jval;
+	const jvalue* ret = &jval;
 
 	for(const auto& it : sv)
 	{
@@ -104,10 +104,10 @@ jtype jquery(cjref jval, csref query)
 	return *ret;
 }
 
-jtype jupdate(jref jval, csref query, cjref new_jval)
+jvalue jupdate(jvalue& jval, const std::string& query, const jvalue& new_jval)
 {
-	stype s;
-	std::vector<stype> sv;
+	std::string s;
+	std::vector<std::string> sv;
 	std::istringstream ss(query);
 
 	while(std::getline(ss, s, '.'))
@@ -115,7 +115,7 @@ jtype jupdate(jref jval, csref query, cjref new_jval)
 		sv.push_back(s);
 	}
 
-	jtype* old_jval = &jval;
+	jvalue* old_jval = &jval;
 
 	for(const auto& it : sv)
 	{
@@ -134,7 +134,7 @@ jtype jupdate(jref jval, csref query, cjref new_jval)
 		}
 	}
 
-	jtype ret = *old_jval;
+	jvalue ret = *old_jval;
 
 	if(!old_jval->isNull())
 	{
@@ -144,7 +144,7 @@ jtype jupdate(jref jval, csref query, cjref new_jval)
 	return ret;
 }
 
-bool jtob(cjref jval)
+bool jtob(const jvalue& jval)
 {
 	bool ret = false;
 
@@ -160,9 +160,9 @@ bool jtob(cjref jval)
 	return ret;
 }
 
-stype jtos(cjref jval)
+std::string jtos(const jvalue& jval)
 {
-	stype ret = "";
+	std::string ret = "";
 
 	if(jval.isBool() || jval.isString())
 	{
@@ -184,7 +184,7 @@ stype jtos(cjref jval)
 	return ret;
 }
 
-int jtoi(cjref jval)
+int jtoi(const jvalue& jval)
 {
 	int ret = 0;
 
@@ -200,7 +200,7 @@ int jtoi(cjref jval)
 	return ret;
 }
 
-unsigned int jtou(cjref jval)
+unsigned int jtou(const jvalue& jval)
 {
 	unsigned int ret = 0;
 
@@ -216,7 +216,7 @@ unsigned int jtou(cjref jval)
 	return ret;
 }
 
-int64_t jtoi64(cjref jval)
+int64_t jtoi64(const jvalue& jval)
 {
 	int64_t ret = 0;
 
@@ -232,7 +232,7 @@ int64_t jtoi64(cjref jval)
 	return ret;
 }
 
-uint64_t jtou64(cjref jval)
+uint64_t jtou64(const jvalue& jval)
 {
 	uint64_t ret = 0;
 
@@ -248,7 +248,7 @@ uint64_t jtou64(cjref jval)
 	return ret;
 }
 
-float jtof(cjref jval)
+float jtof(const jvalue& jval)
 {
 	float ret = 0.0f;
 
@@ -264,7 +264,7 @@ float jtof(cjref jval)
 	return ret;
 }
 
-double jtod(cjref jval)
+double jtod(const jvalue& jval)
 {
 	double ret = 0.0;
 

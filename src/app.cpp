@@ -11,7 +11,6 @@
 
 #include "app_info.h"
 
-#include "type.h"
 #include "json.h"
 #include "util.h"
 #include "thread.h"
@@ -115,7 +114,7 @@ int main(int argc, char** argv)
 	{
 		// LLOG() << md5("123");
 
-		jtype jval;
+		jvalue jval;
 
 		if(!jload("./bin/demo.json", jval))
 		{
@@ -146,7 +145,7 @@ int main(int argc, char** argv)
 			LLOG() << jtoi(jquery(jval, "value3"));
 			LLOG() << jtos(jquery(jval, "value4"));
 
-			jupdate(jval, "value3", jtype(6.28f));
+			jupdate(jval, "value3", jvalue(6.28f));
 
 			LLOG() << jdump(jval, false);
 

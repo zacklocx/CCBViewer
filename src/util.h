@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-#include "type.h"
+#include <string>
 
 uint64_t timestamp_s();
 uint64_t timestamp_ms();
@@ -12,7 +12,7 @@ uint64_t timestamp_ms();
 std::string now();
 std::string what_time(uint64_t ts);
 
-std::string md5(csref s);
-std::string urlencode(csref s);
+std::string md5(const std::string& s);
+std::string urlencode(const std::string& s);
 
 #endif // UTIL_INCLUDED
