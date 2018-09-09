@@ -2,32 +2,79 @@
 #include "json.h"
 
 #include <vector>
+#include <memory>
 #include <sstream>
-#include <exception>
-#include <iostream>
+#include <fstream>
 
-bool jparse(const std::string& jstr, Json::Value& jval, bool jexc /* = false */)
+bool jload(csref path, jref jval)
 {
-	Json::CharReaderBuilder builder;
-	builder["collectComments"] = false;
+	std::ifstream file(path);
 
-	JSONCPP_STRING jerr;
-	Json::CharReader* reader = builder.newCharReader();
+	bool ret = !file.fail();
 
-	bool ret = reader->parse(jstr.data(), jstr.data() + jstr.size(), &jval, &jerr);
-
-	if(jexc && jerr.length() > 0)
+	if(ret)
 	{
-		throw std::runtime_error(jerr);
+		Json::CharReaderBuilder builder;
+		builder["collectComments"] = false;
+
+		JSONCPP_STRING err;
+		ret = parseFromStream(builder, file, &jval, &err);
 	}
 
 	return ret;
 }
 
-Json::Value jquery(const Json::Value& jval, const std::string& query)
+bool jsave(csref path, cjref jval)
 {
-	std::string s;
-	std::vector<std::string> sv;
+	std::ofstream file(path);
+
+	bool ret = !file.fail();
+
+	if(ret)
+	{
+		Json::StreamWriterBuilder builder;
+		builder["commentStyle"] = "None";
+		builder["indentation"] = "";
+
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		ret = writer->write(jval, &file);
+	}
+
+	return ret;
+}
+
+jtype jparse(csref str)
+{
+	jtype ret = jnull;
+
+	Json::CharReaderBuilder builder;
+	builder["collectComments"] = false;
+
+	JSONCPP_STRING err;
+	std::unique_ptr<Json::CharReader> const reader(builder.newCharReader());
+	reader->parse(str.data(), str.data() + str.size(), &ret, &err);
+
+	return ret;
+}
+
+stype jdump(cjref jval, bool indent)
+{
+	std::ostringstream ss;
+
+	Json::StreamWriterBuilder builder;
+	builder["commentStyle"] = "None";
+	builder["indentation"] = indent? "\t" : "";
+
+	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+	writer->write(jval, &ss);
+
+	return ss.str();
+}
+
+jtype jquery(cjref jval, csref query)
+{
+	stype s;
+	std::vector<stype> sv;
 	std::istringstream ss(query);
 
 	while(std::getline(ss, s, '.'))
@@ -35,7 +82,7 @@ Json::Value jquery(const Json::Value& jval, const std::string& query)
 		sv.push_back(s);
 	}
 
-	const Json::Value* ret = &jval;
+	const jtype* ret = &jval;
 
 	for(const auto& it : sv)
 	{
@@ -57,7 +104,47 @@ Json::Value jquery(const Json::Value& jval, const std::string& query)
 	return *ret;
 }
 
-bool jtob(const Json::Value& jval)
+jtype jupdate(jref jval, csref query, cjref new_jval)
+{
+	stype s;
+	std::vector<stype> sv;
+	std::istringstream ss(query);
+
+	while(std::getline(ss, s, '.'))
+	{
+		sv.push_back(s);
+	}
+
+	jtype* old_jval = &jval;
+
+	for(const auto& it : sv)
+	{
+		if(old_jval->isArray())
+		{
+			old_jval = &(*old_jval)[std::stoi(it)];
+		}
+		else
+		{
+			old_jval = &(*old_jval)[it];
+		}
+
+		if(old_jval->isNull())
+		{
+			break;
+		}
+	}
+
+	jtype ret = *old_jval;
+
+	if(!old_jval->isNull())
+	{
+		*old_jval = new_jval;
+	}
+
+	return ret;
+}
+
+bool jtob(cjref jval)
 {
 	bool ret = false;
 
@@ -73,11 +160,11 @@ bool jtob(const Json::Value& jval)
 	return ret;
 }
 
-std::string jtos(const Json::Value& jval)
+stype jtos(cjref jval)
 {
-	std::string ret = "";
+	stype ret = "";
 
-	if(jval.isString())
+	if(jval.isBool() || jval.isString())
 	{
 		ret = jval.asString();
 	}
@@ -97,7 +184,7 @@ std::string jtos(const Json::Value& jval)
 	return ret;
 }
 
-int jtoi(const Json::Value& jval)
+int jtoi(cjref jval)
 {
 	int ret = 0;
 
@@ -113,7 +200,7 @@ int jtoi(const Json::Value& jval)
 	return ret;
 }
 
-unsigned int jtou(const Json::Value& jval)
+unsigned int jtou(cjref jval)
 {
 	unsigned int ret = 0;
 
@@ -129,7 +216,7 @@ unsigned int jtou(const Json::Value& jval)
 	return ret;
 }
 
-int64_t jtoi64(const Json::Value& jval)
+int64_t jtoi64(cjref jval)
 {
 	int64_t ret = 0;
 
@@ -145,7 +232,7 @@ int64_t jtoi64(const Json::Value& jval)
 	return ret;
 }
 
-uint64_t jtou64(const Json::Value& jval)
+uint64_t jtou64(cjref jval)
 {
 	uint64_t ret = 0;
 
@@ -161,7 +248,7 @@ uint64_t jtou64(const Json::Value& jval)
 	return ret;
 }
 
-float jtof(const Json::Value& jval)
+float jtof(cjref jval)
 {
 	float ret = 0.0f;
 
@@ -177,7 +264,7 @@ float jtof(const Json::Value& jval)
 	return ret;
 }
 
-double jtod(const Json::Value& jval)
+double jtod(cjref jval)
 {
 	double ret = 0.0;
 
