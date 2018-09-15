@@ -27,39 +27,6 @@ namespace
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		return writer->write(val, &out);
 	}
-
-	const jvalue_t& jquery(const jvalue_t& val, const std::string& query)
-	{
-		std::string s;
-		std::vector<std::string> sv;
-		std::istringstream ss(query);
-
-		while(std::getline(ss, s, '.'))
-		{
-			sv.push_back(s);
-		}
-
-		const jvalue_t* target = &val;
-
-		for(const auto& it : sv)
-		{
-			if(target->isArray())
-			{
-				target = &(*target)[std::stoi(it)];
-			}
-			else
-			{
-				target = &(*target)[it];
-			}
-
-			if(target->isNull())
-			{
-				break;
-			}
-		}
-
-		return *target;
-	}
 }
 
 bool jload(const std::string& path, jvalue_t& val)
@@ -91,18 +58,62 @@ std::string jdump(const jvalue_t& val)
 	return ss.str();
 }
 
+bool jquery(jvalue_t& val, const std::string& query, jvalue_t*& target)
+{
+	bool ret = true;
+	target = &val;
+
+	std::string s;
+	std::vector<std::string> sv;
+	std::istringstream ss(query);
+
+	while(std::getline(ss, s, '.'))
+	{
+		if(s.length() > 0)
+		{
+			sv.push_back(s);
+		}
+	}
+
+	for(const auto& key : sv)
+	{
+		if(target->isObject())
+		{
+			target = (ret = target->isMember(key))? &(*target)[key] : nullptr;
+		}
+		else if(target->isArray())
+		{
+			Json::ArrayIndex index = std::stoi(key);
+			target = (ret = target->isValidIndex(index))? &(*target)[index] : nullptr;
+		}
+		else
+		{
+			ret = false;
+			target = nullptr;
+		}
+
+		if(!ret)
+		{
+			break;
+		}
+	}
+
+	return ret;
+}
+
 jvalue_t jget(const jvalue_t& val, const std::string& query)
 {
-	return jquery(val, query);
+	jvalue_t* target;
+	return jquery(const_cast<jvalue_t&>(val), query, target)? *target : jnull;
 }
 
 void jset(jvalue_t& val, const std::string& query, const jvalue_t& v)
 {
-	jvalue_t& target = const_cast<jvalue_t&>(jquery(val, query));
+	jvalue_t* target;
 
-	if(!target.isNull())
+	if(jquery(val, query, target))
 	{
-		target = v;
+		*target = v;
 	}
 }
 
@@ -152,7 +163,7 @@ int jtoi(const jvalue_t& val)
 
 	if(val.isString())
 	{
-		ret = std::stol(val.asString());
+		ret = std::stoi(val.asString());
 	}
 	else if(val.isInt())
 	{

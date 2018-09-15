@@ -116,43 +116,78 @@ int main(int argc, char** argv)
 
 		jvalue_t val;
 
-		if(!jload("./bin/demo.json", val))
+		val["test1"] = jnull;
+		val["test2"] = jint;
+		val["test3"] = juint;
+		val["test4"] = jreal;
+		val["test5"] = jstr;
+		val["test6"] = jbool;
+		val["test7"] = jarr;
+		val["test8"] = jobj;
+		val["test9"] = jnull;
+
+		jvalue_t* target;
+
+		if(jquery(val, "test1", target))
 		{
-			LLOG() << "json load failed";
+			LLOG() << "test1";
+			*target = "zacklocx";
 		}
-		// if(!jparse("{\"value1\" : true, \"value2\" : false, \"value3\" : \"3.14\", \"value4\":\"bad\"}", val))
+
+		if(jquery(val, "test2", target))
+		{
+			LLOG() << "test2";
+			*target = "22";
+		}
+
+		// val["test7"][0] = jint;
+		// val["test7"][3] = jstr;
+
+		// val["test8"] = val;
+
+		// jset(val, "test7.1", 1);
+		// jset(val, "test7.2", 2);
+		// jset(val, "test7.4", 4);
+
+		jsave("./bin/test.json", val);
+
+		// if(!jload("./bin/demo.json", val))
 		// {
-		// 	LLOG() << "malformed json";
+		// 	LLOG() << "json load failed";
 		// }
-		else
-		{
-			//LLOG() << jtob(jget(val, "value2"));
+		// // if(!jparse("{\"value1\" : true, \"value2\" : false, \"value3\" : \"3.14\", \"value4\":\"bad\"}", val))
+		// // {
+		// // 	LLOG() << "malformed json";
+		// // }
+		// else
+		// {
+		// 	//LLOG() << jtob(jget(val, "value2"));
 
-			LLOG("indent false") << jdump(val);
-			LLOG("indent true") << jdump(val);
-			LLOG("value4") << jdump(jget(val, "value4"));
+		// 	LLOG("indent false") << jdump(val);
+		// 	LLOG("indent true") << jdump(val);
+		// 	LLOG("value4") << jdump(jget(val, "value4"));
 
-			if(jtob(jget(val, "value2")))
-			{
-				LLOG("true");
-			}
-			else
-			{
-				LLOG("false");
-			}
+		// 	if(jtob(jget(val, "value2")))
+		// 	{
+		// 		LLOG("true");
+		// 	}
+		// 	else
+		// 	{
+		// 		LLOG("false");
+		// 	}
 
-			LLOG() << jtos(val);
-			LLOG() << jtos(jget(val, "value1"));
+		// 	LLOG() << jtos(val);
+		// 	LLOG() << jtos(jget(val, "value1"));
 
-			LLOG() << jtoi(jget(val, "value3"));
-			LLOG() << jtos(jget(val, "value4"));
+		// 	LLOG() << jtoi(jget(val, "value3"));
+		// 	LLOG() << jtos(jget(val, "value4"));
 
-			jset(val, "value3", 6.28f);
+		// 	jset(val, "value3", 6.28f);
 
-			LLOG() << jdump(val);
+		// 	LLOG() << jdump(val);
 
-			jsave("./bin/demo2.json", val);
-		}
+		// 	jsave("./bin/demo2.json", val);
+		//  }
 
 	// 	sig_win_create.connect(boost::bind(on_create, _1, _2, _3));
 	// 	sig_win_destroy.connect(boost::bind(on_destroy));
