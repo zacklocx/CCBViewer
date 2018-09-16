@@ -1,7 +1,9 @@
 
 #include "util.h"
 
+#include <ctime>
 #include <cstdio>
+#include <cstdlib>
 
 #include <chrono>
 #include <sstream>
@@ -11,14 +13,14 @@
 
 uint64_t timestamp_s()
 {
-	auto ts = std::chrono::system_clock::now().time_since_epoch();
-	return std::chrono::duration_cast<std::chrono::seconds>(ts).count();
+	auto duration = std::chrono::system_clock::now().time_since_epoch();
+	return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 }
 
 uint64_t timestamp_ms()
 {
-	auto ts = std::chrono::system_clock::now().time_since_epoch();
-	return std::chrono::duration_cast<std::chrono::milliseconds>(ts).count();
+	auto duration = std::chrono::system_clock::now().time_since_epoch();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 }
 
 std::string now()
@@ -33,7 +35,7 @@ std::string now()
 	return ret.str();
 }
 
-std::string what_time(uint64_t ts)
+std::string ttos(uint64_t ts)
 {
 	std::ostringstream ret;
 
@@ -43,6 +45,25 @@ std::string what_time(uint64_t ts)
 	ret << std::put_time(std::localtime(&time), "%F %T");
 
 	return ret.str();
+}
+
+uint64_t stot(const std::string& s)
+{
+	const char* str = s.c_str();
+
+	std::tm tm
+	{
+		.tm_year = atoi(str) - 1900,
+		.tm_mon = atoi(str + 5) - 1,
+		.tm_mday = atoi(str + 8),
+		.tm_hour = atoi(str + 11),
+		.tm_min = atoi(str + 14),
+		.tm_sec = atoi(str + 17)
+	};
+
+	auto duration = std::chrono::system_clock::from_time_t(std::mktime(&tm)).time_since_epoch();
+
+	return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 }
 
 std::string md5(const std::string& s)
