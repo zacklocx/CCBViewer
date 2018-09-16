@@ -47,7 +47,7 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/Box2D)
 
 file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/imgui/*.cpp)
-file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/Box2D/Box2D/*.cpp)
+file(GLOB_RECURSE IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/Box2D/Box2D/*.cpp)
 file(GLOB_RECURSE APP_CPP *.cpp)
 
 add_executable(${APP_NAME} ${IMGUI_CPP} ${APP_CPP})
