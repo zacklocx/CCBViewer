@@ -30,7 +30,7 @@ void demo_t::draw() const
 
 	if(0 == tex_.id())
 	{
-		if(const_cast<texture_t&>(tex_).load("bin/tex1.jpg"))
+		if(const_cast<texture_t&>(tex_).load("/Users/zacklocx/tmp/tex.jpg"))
 		{
 			LLOG("tex_id") << tex_.id();
 		}
@@ -41,7 +41,7 @@ void demo_t::draw() const
 	}
 	else
 	{
-		tex_.draw(window_t::width() / 2, window_t::height() / 2, tex_.width() * 0.5f, tex_.height() * 0.5f);
+		tex_.draw(window_t::width() / 2, window_t::height() / 2, tex_.width(), tex_.height());
 	}
 }
 
