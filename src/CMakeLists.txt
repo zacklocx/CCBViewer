@@ -5,7 +5,6 @@ set(CMAKE_BUILD_TYPE Debug)
 set(APP_NAME ${PROJECT_NAME})
 
 add_definitions(-DAPP_DEBUG)
-
 add_definitions(-DSOCI_USE_BOOST)
 add_definitions(-DAVHTTP_ENABLE_ZLIB)
 add_definitions(-DAVHTTP_ENABLE_OPENSSL)
