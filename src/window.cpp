@@ -1,5 +1,5 @@
 
-#include "render_win.h"
+#include "window.h"
 
 #include <cctype>
 #include <cstdio>
@@ -11,7 +11,7 @@
 #include "imgui.h"
 #include "imgui_glut.h"
 
-boost::signals2::signal<void(int, int, const char*)> sig_win_create;
+boost::signals2::signal<void(int, int)> sig_win_create;
 boost::signals2::signal<void()> sig_win_destroy;
 boost::signals2::signal<void()> sig_win_render;
 
@@ -165,37 +165,37 @@ namespace
 	}
 }
 
-bool render_win_t::ready()
+bool window_t::ready()
 {
 	return win_state_t::working == win_state;
 }
 
-int render_win_t::width()
+int window_t::width()
 {
 	return win_width;
 }
 
-int render_win_t::height()
+int window_t::height()
 {
 	return win_height;
 }
 
-int render_win_t::mouse_x()
+int window_t::mouse_x()
 {
 	return mouse_state.x_;
 }
 
-int render_win_t::mouse_y()
+int window_t::mouse_y()
 {
 	return mouse_state.y_;
 }
 
-int render_win_t::mouse_btn()
+int window_t::mouse_btn()
 {
 	return mouse_state.btn_;
 }
 
-void render_win_t::create(int width, int height, const char* title)
+void window_t::create(int width, int height)
 {
 	int argc = 1;
 	char _[] = "";
@@ -217,10 +217,8 @@ void render_win_t::create(int width, int height, const char* title)
 	win_width = (width > 0)? width : screen_width;
 	win_height = (height > 0)? height : screen_height;
 
-	title = (title != nullptr)? title : "";
-
 	glutInitWindowSize(win_width, win_height);
-	glutCreateWindow(title);
+	glutCreateWindow("");
 	glutPositionWindow((screen_width - win_width) / 2, (screen_height - win_height) / 2);
 
 	GLenum err = glewInit();
@@ -246,7 +244,7 @@ void render_win_t::create(int width, int height, const char* title)
 
 	win_state = win_state_t::working;
 
-	sig_win_create(win_width, win_height, title);
+	sig_win_create(win_width, win_height);
 
 	glutMainLoop();
 
@@ -255,7 +253,7 @@ void render_win_t::create(int width, int height, const char* title)
 	sig_win_destroy();
 }
 
-void render_win_t::destroy()
+void window_t::destroy()
 {
 	win_state = win_state_t::halting;
 }
