@@ -13,7 +13,7 @@
 #include "util.h"
 #include "thread.h"
 #include "render.h"
-#include "render_win.h"
+#include "window.h"
 #include "llog.h"
 
 #include "a.h"
@@ -51,35 +51,35 @@ namespace
 
 	void on_update()
 	{
-		try
-		{
-			// LLOG("on_update");
+		// try
+		// {
+		// 	// LLOG("on_update");
 
-			float x = render_win_t::mouse_x();
-			float y = render_win_t::mouse_y();
+		// 	float x = window_t::mouse_x();
+		// 	float y = window_t::mouse_y();
 
-			if(x > 1000)
-			{
-				throw std::logic_error("x is bigger than 1000");
-			}
+		// 	if(x > 1000)
+		// 	{
+		// 		throw std::logic_error("x is bigger than 1000");
+		// 	}
 
-			// demo.set_x(x);
-			// demo.set_y(y);
-		}
-		catch(...)
-		{
-			std::lock_guard<std::mutex> lock(e_mutex);
+		// 	// demo.set_x(x);
+		// 	// demo.set_y(y);
+		// }
+		// catch(...)
+		// {
+		// 	std::lock_guard<std::mutex> lock(e_mutex);
 
-			e_ptr = std::current_exception();
-			render_win_t::destroy();
-		}
+		// 	e_ptr = std::current_exception();
+		// 	window_t::destroy();
+		// }
 	}
 
-	void on_create(int width, int height, const char* title)
+	void on_create(int width, int height)
 	{
-		LLOG("on_create") << width << " " << height << " " << title;
+		LLOG("on_create") << width << " " << height;
 
-		thread_t<thread_exec_t::detach> logic_thread([]() { while(render_win_t::ready()) on_update(); });
+		thread_t<thread_exec_t::detach> logic_thread([]() { while(window_t::ready()) on_update(); });
 	}
 
 	void on_destroy()
@@ -188,6 +188,10 @@ int main(int argc, char** argv)
 	{
 		// LLOG() << md5("123");
 
+		LLOG() << ttos(1537074478);
+
+		LLOG() << stot("2018-09-16 13:07:58");
+
 		jvalue_t val;
 
 		val["test1"] = jnull;
@@ -223,7 +227,7 @@ int main(int argc, char** argv)
 		// jset(val, "test7.2", 2);
 		// jset(val, "test7.4", 4);
 
-		jsave("./bin/test.json", val);
+		jsave("bin/test.json", val);
 
 		// if(!jload("./bin/demo.json", val))
 		// {
@@ -263,18 +267,18 @@ int main(int argc, char** argv)
 		// 	jsave("./bin/demo2.json", val);
 		//  }
 
-	// 	sig_win_create.connect(boost::bind(on_create, _1, _2, _3));
-	// 	sig_win_destroy.connect(boost::bind(on_destroy));
-	// 	sig_win_render.connect(boost::bind(on_render));
+		sig_win_create.connect(boost::bind(on_create, _1, _2));
+		sig_win_destroy.connect(boost::bind(on_destroy));
+		sig_win_render.connect(boost::bind(on_render));
 
-	// 	render_win_t::create(1334, 750, "zacklocx");
+		window_t::create(1334, 750);
 
-	// 	if(e_ptr)
-	// 	{
-	// 		std::rethrow_exception(e_ptr);
-	// 	}
+		if(e_ptr)
+		{
+			std::rethrow_exception(e_ptr);
+		}
 
-		test_box2d();
+		// test_box2d();
 	}
 	catch(std::exception& e)
 	{

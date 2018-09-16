@@ -7,6 +7,6 @@ namespace a_ns
 {
 	void render(const a_ns::a_t& a)
 	{
-		std::cout << a.get() << std::endl;
+		// std::cout << a.get() << std::endl;
 	}
 }
