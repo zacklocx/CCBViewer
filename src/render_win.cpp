@@ -26,10 +26,10 @@ namespace
 		int x_, y_, btn_;
 	};
 
-	win_state_t win_state = win_state_t::halted;
-
 	int win_width = 0;
 	int win_height = 0;
+
+	win_state_t win_state = win_state_t::halted;
 
 	mouse_state_t mouse_state;
 
