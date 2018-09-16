@@ -9,8 +9,6 @@
 
 #include <json/json.h>
 
-#include "app_info.h"
-
 #include "json.h"
 #include "util.h"
 #include "thread.h"
