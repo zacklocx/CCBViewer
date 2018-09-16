@@ -15,6 +15,7 @@ namespace
 		builder["collectComments"] = false;
 
 		JSONCPP_STRING err;
+
 		return parseFromStream(builder, in, &val, &err);
 	}
 
@@ -25,6 +26,7 @@ namespace
 		builder["indentation"] = "\t";
 
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
 		return writer->write(val, &out);
 	}
 }
@@ -45,6 +47,7 @@ jvalue_t jparse(const std::string& str)
 {
 	std::istringstream ss(str);
 	jvalue_t val;
+
 	jread(ss, val);
 
 	return val;
@@ -61,7 +64,6 @@ std::string jdump(const jvalue_t& val)
 bool jquery(jvalue_t& val, const std::string& query, jvalue_t*& target)
 {
 	bool ret = true;
-	target = &val;
 
 	std::string s;
 	std::vector<std::string> sv;
@@ -74,6 +76,8 @@ bool jquery(jvalue_t& val, const std::string& query, jvalue_t*& target)
 			sv.push_back(s);
 		}
 	}
+
+	target = &val;
 
 	for(const auto& key : sv)
 	{
