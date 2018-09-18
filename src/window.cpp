@@ -202,14 +202,8 @@ void window_t::create(int width, int height)
 	char* argv[] = { _, 0 };
 
 	glutInit(&argc, argv);
-
-	glutInitContextVersion(4, 1);
-	glutInitContextProfile(GLUT_CORE_PROFILE);
-	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
-
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
-
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	int screen_width = glutGet(GLUT_SCREEN_WIDTH);
 	int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
@@ -218,8 +212,9 @@ void window_t::create(int width, int height)
 	win_height = (height > 0)? height : screen_height;
 
 	glutInitWindowSize(win_width, win_height);
+	glutInitWindowPosition((screen_width - win_width) / 2, (screen_height - win_height) / 2);
+
 	glutCreateWindow("");
-	glutPositionWindow((screen_width - win_width) / 2, (screen_height - win_height) / 2);
 
 	GLenum err = glewInit();
 
