@@ -7,6 +7,8 @@
 
 #include <boost/bind.hpp>
 
+#include <GL/gl.h>
+
 #include <json/json.h>
 
 #include "json.h"
@@ -53,33 +55,38 @@ namespace
 
 	void on_update()
 	{
-		// try
-		// {
-		// 	// LLOG("on_update");
+		try
+		{
+			// LLOG("on_update");
 
-		// 	float x = window_t::mouse_x();
-		// 	float y = window_t::mouse_y();
+			float x = window_t::mouse_x();
+			float y = window_t::mouse_y();
 
-		// 	if(x > 1000)
-		// 	{
-		// 		throw std::logic_error("x is bigger than 1000");
-		// 	}
+			LLOG() << x << " " << y;
 
-		// 	// demo.set_x(x);
-		// 	// demo.set_y(y);
-		// }
-		// catch(...)
-		// {
-		// 	std::lock_guard<std::mutex> lock(e_mutex);
+			if(x > 1000)
+			{
+				throw std::logic_error("x is bigger than 1000");
+			}
 
-		// 	e_ptr = std::current_exception();
-		// 	window_t::destroy();
-		// }
+			// demo.set_x(x);
+			// demo.set_y(y);
+		}
+		catch(...)
+		{
+			std::lock_guard<std::mutex> lock(e_mutex);
+
+			e_ptr = std::current_exception();
+			window_t::destroy();
+		}
 	}
 
-	void on_create(int width, int height)
+	void on_create()
 	{
-		LLOG("on_create") << width << " " << height;
+		LLOG("on_create");
+
+		LLOG() << glGetString(GL_RENDERER);
+		LLOG() << glGetString(GL_VERSION);
 	}
 
 	void on_destroy()
@@ -144,10 +151,7 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		// LLOG() << md5("123");
-
 		LLOG() << ttos(1537074478);
-
 		LLOG() << stot("2018-09-16 13:07:58");
 
 		jvalue_t val;
@@ -229,11 +233,11 @@ int main(int argc, char** argv)
 
 		std::thread update_thread([]() { while(window_t::ready()) on_update(); });
 
-		sig_win_create.connect(boost::bind(on_create, _1, _2));
+		sig_win_create.connect(boost::bind(on_create));
 		sig_win_destroy.connect(boost::bind(on_destroy));
 		sig_win_render.connect(boost::bind(on_render));
 
-		window_t::create(1334, 750);
+		window_t::create(1334, 750, 0xFFFFFF);
 
 		if(e_ptr)
 		{
