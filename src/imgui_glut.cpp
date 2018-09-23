@@ -117,28 +117,30 @@ void imgui_glut_init()
 
 	io.RenderDrawListsFn = imgui_glut_draw;
 
-	io.KeyMap[ImGuiKey_Tab]			= 9;
-	io.KeyMap[ImGuiKey_LeftArrow]	= GLUT_KEY_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow]	= GLUT_KEY_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow]		= GLUT_KEY_UP;
-	io.KeyMap[ImGuiKey_DownArrow]	= GLUT_KEY_DOWN;
-	io.KeyMap[ImGuiKey_PageUp]		= GLUT_KEY_PAGE_UP;
-	io.KeyMap[ImGuiKey_PageDown]	= GLUT_KEY_PAGE_DOWN;
-	io.KeyMap[ImGuiKey_Home]		= GLUT_KEY_HOME;
-	io.KeyMap[ImGuiKey_End]			= GLUT_KEY_END;
+	io.KeyMap[ImGuiKey_Tab]			= '\t';
+	io.KeyMap[ImGuiKey_LeftArrow]	= 256 + GLUT_KEY_LEFT;
+	io.KeyMap[ImGuiKey_RightArrow]	= 256 + GLUT_KEY_RIGHT;
+	io.KeyMap[ImGuiKey_UpArrow]		= 256 + GLUT_KEY_UP;
+	io.KeyMap[ImGuiKey_DownArrow]	= 256 + GLUT_KEY_DOWN;
+	io.KeyMap[ImGuiKey_PageUp]		= 256 + GLUT_KEY_PAGE_UP;
+	io.KeyMap[ImGuiKey_PageDown]	= 256 + GLUT_KEY_PAGE_DOWN;
+	io.KeyMap[ImGuiKey_Home]		= 256 + GLUT_KEY_HOME;
+	io.KeyMap[ImGuiKey_End]			= 256 + GLUT_KEY_END;
+	io.KeyMap[ImGuiKey_Insert]		= 256 + GLUT_KEY_INSERT;
 	io.KeyMap[ImGuiKey_Delete]		= 127;
 	io.KeyMap[ImGuiKey_Backspace]	= 8;
+	io.KeyMap[ImGuiKey_Space]		= ' ';
 	io.KeyMap[ImGuiKey_Enter]		= 13;
 	io.KeyMap[ImGuiKey_Escape]		= 27;
-	io.KeyMap[ImGuiKey_A]			= 1;
-	io.KeyMap[ImGuiKey_C]			= 3;
-	io.KeyMap[ImGuiKey_V]			= 22;
-	io.KeyMap[ImGuiKey_X]			= 24;
-	io.KeyMap[ImGuiKey_Y]			= 25;
-	io.KeyMap[ImGuiKey_Z]			= 26;
+	io.KeyMap[ImGuiKey_A]			= 'A';
+	io.KeyMap[ImGuiKey_C]			= 'C';
+	io.KeyMap[ImGuiKey_V]			= 'V';
+	io.KeyMap[ImGuiKey_X]			= 'X';
+	io.KeyMap[ImGuiKey_Y]			= 'Y';
+	io.KeyMap[ImGuiKey_Z]			= 'Z';
 }
 
-void imgui_glut_prepare(int width, int height)
+void imgui_glut_newframe(int width, int height)
 {
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -147,10 +149,10 @@ void imgui_glut_prepare(int width, int height)
 		int last_tex;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_tex);
 
-		int width, height;
+		int tex_width, tex_height;
 		unsigned char* pixels;
 
-		io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+		io.Fonts->GetTexDataAsAlpha8(&pixels, &tex_width, &tex_height);
 
 		unsigned int font_tex;
 
@@ -158,7 +160,7 @@ void imgui_glut_prepare(int width, int height)
 		glBindTexture(GL_TEXTURE_2D, font_tex);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, tex_width, tex_height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
 
 		io.Fonts->TexID = (void*)(intptr_t)font_tex;
 
