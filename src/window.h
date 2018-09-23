@@ -7,6 +7,8 @@
 class window_t
 {
 public:
+	static bool ready();
+
 	static int width();
 	static int height();
 
@@ -17,13 +19,13 @@ public:
 	static bool key_down(int key);
 
 	static void create(int width, int height, int color);
-	static void destroy();
+	static void close();
 };
 
-extern boost::signals2::signal<void()> sig_win_create;
-extern boost::signals2::signal<void()> sig_win_render;
-extern boost::signals2::signal<void()> sig_win_destroy;
+extern boost::signals2::signal<void(int, int)> sig_win_create;
 extern boost::signals2::signal<void(int, int)> sig_win_resize;
+extern boost::signals2::signal<void()> sig_win_render;
+extern boost::signals2::signal<void()> sig_win_close;
 
 extern boost::signals2::signal<void(int, int)> sig_mouse_move;
 extern boost::signals2::signal<void(int, int, int)> sig_mouse_up;

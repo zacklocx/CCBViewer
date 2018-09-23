@@ -10,14 +10,14 @@
 #include "imgui.h"
 #include "imgui_glut.h"
 
-#define RED(color) ((color & 0xFF0000) >> 16)
-#define GREEN(color) ((color & 0x00FF00) >> 8)
-#define BLUE(color) (color & 0x0000FF)
+#define RED(color) ((color & 0xFF0000) >> 16) / 255.0
+#define GREEN(color) ((color & 0x00FF00) >> 8) / 255.0
+#define BLUE(color) (color & 0x0000FF) / 255.0
 
-boost::signals2::signal<void()> sig_win_create;
-boost::signals2::signal<void()> sig_win_render;
-boost::signals2::signal<void()> sig_win_destroy;
+boost::signals2::signal<void(int, int)> sig_win_create;
 boost::signals2::signal<void(int, int)> sig_win_resize;
+boost::signals2::signal<void()> sig_win_render;
+boost::signals2::signal<void()> sig_win_close;
 
 boost::signals2::signal<void(int, int)> sig_mouse_move;
 boost::signals2::signal<void(int, int, int)> sig_mouse_up;
@@ -30,36 +30,39 @@ boost::signals2::signal<void(int)> sig_key_down;
 
 namespace
 {
-	int width = 0;
-	int height = 0;
+	bool ready_ = false;
 
-	int mouse_x = 0;
-	int mouse_y = 0;
-	int mouse_btn = 0;
+	int width_ = 0;
+	int height_ = 0;
 
-	std::unordered_map<int, bool> key_map;
+	int mouse_x_ = 0;
+	int mouse_y_ = 0;
+	int mouse_btn_ = 0;
 
-	void reshape(int w, int h)
+	std::unordered_map<int, bool> key_map_;
+
+	void reshape(int width, int height)
 	{
-		width = w;
-		height = h;
+		width_ = width;
+		height_ = height;
 
-		glViewport(0, 0, width, height);
+		glViewport(0, 0, width_, height_);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, width, 0, height, -1, 1);
+		glOrtho(0, width_, 0, height_, -1, 1);
 
 		glMatrixMode(GL_MODELVIEW);
 
-		sig_win_resize(width, height);
+		sig_win_resize(width_, height_);
 	}
 
 	void display()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		imgui_glut_prepare(width, height);
+		imgui_glut_newframe(width_, height_);
+
 		sig_win_render();
 		ImGui::Render();
 
@@ -73,8 +76,10 @@ namespace
 
 	void close()
 	{
+		ready_ = false;
+
 		imgui_glut_shutdown();
-		sig_win_destroy();
+		sig_win_close();
 	}
 
 	void mouse_move(int x, int y)
@@ -82,11 +87,11 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.MousePos = ImVec2(x, y);
 
-		mouse_x = x;
-		mouse_y = height - 1 - y;
-		mouse_btn = -1;
+		mouse_x_ = x;
+		mouse_y_ = height_ - 1 - y;
+		mouse_btn_ = -1;
 
-		sig_mouse_move(mouse_x, mouse_y);
+		sig_mouse_move(mouse_x_, mouse_y_);
 	}
 
 	void mouse_click(int btn, int state, int x, int y)
@@ -102,8 +107,8 @@ namespace
 			{
 				int dir = (3 == btn)? 1 : -1;
 
-				io.MouseWheel = dir;
-				sig_mouse_wheel(mouse_x, mouse_y, dir);
+				io.MouseWheel += dir;
+				sig_mouse_wheel(mouse_x_, mouse_y_, dir);
 			}
 		}
 		else
@@ -111,19 +116,19 @@ namespace
 			bool left_btn = GLUT_LEFT_BUTTON == btn;
 			bool right_btn = GLUT_RIGHT_BUTTON == btn;
 
-			mouse_btn = left_btn? 0 : right_btn? 1 : mouse_btn;
-
-			if(0 == mouse_btn || 1 == mouse_btn)
+			if(left_btn || right_btn)
 			{
+				mouse_btn_ = left_btn? 0 : 1;
+
 				if(btn_up)
 				{
-					io.MouseDown[mouse_btn] = false;
-					sig_mouse_up(mouse_x, mouse_y, mouse_btn);
+					io.MouseDown[mouse_btn_] = false;
+					sig_mouse_up(mouse_x_, mouse_y_, mouse_btn_);
 				}
 				else if(btn_down)
 				{
-					io.MouseDown[mouse_btn] = true;
-					sig_mouse_down(mouse_x, mouse_y, mouse_btn);
+					io.MouseDown[mouse_btn_] = true;
+					sig_mouse_down(mouse_x_, mouse_y_, mouse_btn_);
 				}
 			}
 		}
@@ -134,10 +139,10 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.MousePos = ImVec2(x, y);
 
-		mouse_x = x;
-		mouse_y = height - 1 - y;
+		mouse_x_ = x;
+		mouse_y_ = height_ - 1 - y;
 
-		sig_mouse_drag(mouse_x, mouse_y, mouse_btn);
+		sig_mouse_drag(mouse_x_, mouse_y_, mouse_btn_);
 	}
 
 	void normal_key_down(unsigned char key, int x, int y)
@@ -159,7 +164,7 @@ namespace
 				io.KeysDown[key] = true;
 			}
 
-			key_map[key] = true;
+			key_map_[key] = true;
 			sig_key_down(key);
 		}
 	}
@@ -172,7 +177,7 @@ namespace
 			io.KeysDown[key] = false;
 		}
 
-		key_map[key] = false;
+		key_map_[key] = false;
 		sig_key_up(key);
 	}
 
@@ -181,7 +186,7 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = true;
 
-		key_map[key] = true;
+		key_map_[key] = true;
 		sig_key_down(key);
 	}
 
@@ -190,57 +195,67 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = false;
 
-		key_map[key] = false;
+		key_map_[key] = false;
 		sig_key_up(key);
 	}
 }
 
+bool window_t::ready()
+{
+	return ready_;
+}
+
 int window_t::width()
 {
-	return ::width;
+	return width_;
 }
 
 int window_t::height()
 {
-	return ::height;
+	return height_;
 }
 
 int window_t::mouse_x()
 {
-	return ::mouse_x;
+	return mouse_x_;
 }
 
 int window_t::mouse_y()
 {
-	return ::mouse_y;
+	return mouse_y_;
 }
 
 int window_t::mouse_btn()
 {
-	return ::mouse_btn;
+	return mouse_btn_;
 }
 
 bool window_t::key_down(int key)
 {
-	return key_map[key];
+	return key_map_[key];
 }
 
 void window_t::create(int width, int height, int color)
 {
 	int argc = 1;
-	char _[] = "";
-	char* argv[] = { _, 0 };
+	char* argv[] = { (char*)"", 0 };
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-	glutInitWindowSize(width, height);
-	glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - width) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - height) / 2);
+	width_ = width;
+	height_ = height;
+
+	int x = (glutGet(GLUT_SCREEN_WIDTH) - width_) / 2;
+	int y = (glutGet(GLUT_SCREEN_HEIGHT) - height_) / 2;
+
+	glutInitWindowSize(width_, height_);
+	glutInitWindowPosition(x, y);
 
 	glutCreateWindow("");
 
-	glClearColor(RED(color) / 255.0, GREEN(color) / 255.0, BLUE(color) / 255.0, 1.0);
+	glClearColor(RED(color), GREEN(color), BLUE(color), 1.0);
 
 	imgui_glut_init();
 
@@ -249,8 +264,8 @@ void window_t::create(int width, int height, int color)
 	glutIdleFunc(idle);
 	glutCloseFunc(close);
 
-	glutMouseFunc(mouse_click);
 	glutPassiveMotionFunc(mouse_move);
+	glutMouseFunc(mouse_click);
 	glutMotionFunc(mouse_drag);
 
 	glutKeyboardFunc(normal_key_down);
@@ -258,12 +273,14 @@ void window_t::create(int width, int height, int color)
 	glutSpecialFunc(special_key_down);
 	glutSpecialUpFunc(special_key_up);
 
-	sig_win_create();
+	ready_ = true;
+
+	sig_win_create(width_, height_);
 
 	glutMainLoop();
 }
 
-void window_t::destroy()
+void window_t::close()
 {
 	glutLeaveMainLoop();
 }
