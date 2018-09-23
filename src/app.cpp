@@ -12,7 +12,8 @@
 #include <json/json.h>
 
 #include "json.h"
-#include "util.h"
+//#include "util.h"
+#include "timer.h"
 #include "render.h"
 #include "window.h"
 #include "llog.h"
@@ -22,7 +23,7 @@
 
 #include <chipmunk/chipmunk.h>
 
-#define GRABBABLE_MASK_BIT (1<<31)
+#define GRABBABLE_MASK_BIT (1 << 31)
 cpShapeFilter NOT_GRABBABLE_FILTER = {CP_NO_GROUP, ~GRABBABLE_MASK_BIT, ~GRABBABLE_MASK_BIT};
 
 namespace
@@ -55,43 +56,46 @@ namespace
 
 	void on_update()
 	{
-		try
-		{
-			// LLOG("on_update");
+		// try
+		// {
+		// 	// LLOG("on_update");
 
-			float x = window_t::mouse_x();
-			float y = window_t::mouse_y();
+		// 	float x = window_t::mouse_x();
+		// 	float y = window_t::mouse_y();
 
-			LLOG() << x << " " << y;
+		// 	// LLOG() << x << " " << y;
 
-			if(x > 1000)
-			{
-				throw std::logic_error("x is bigger than 1000");
-			}
+		// 	if(x > 1000)
+		// 	{
+		// 		throw std::logic_error("x is bigger than 1000");
+		// 	}
 
-			// demo.set_x(x);
-			// demo.set_y(y);
-		}
-		catch(...)
-		{
-			std::lock_guard<std::mutex> lock(e_mutex);
+		// 	// demo.set_x(x);
+		// 	// demo.set_y(y);
+		// }
+		// catch(...)
+		// {
+		// 	std::lock_guard<std::mutex> lock(e_mutex);
 
-			e_ptr = std::current_exception();
-			window_t::destroy();
-		}
+		// 	e_ptr = std::current_exception();
+		// 	window_t::destroy();
+		// }
 	}
 
-	void on_create()
+	void on_create(int width, int height)
 	{
-		LLOG("on_create");
+		if(window_t::ready())
+		{
+			LLOG("on_create") << width << " " << height;
+		}
 
 		LLOG() << glGetString(GL_RENDERER);
 		LLOG() << glGetString(GL_VERSION);
 	}
 
-	void on_destroy()
+	void on_close()
 	{
-		LLOG("on_destroy");
+		LLOG("on_close");
 	}
 
 	void on_render()
@@ -112,6 +116,16 @@ namespace
 		root_cmd.clear();
 
 		fps();
+	}
+
+	void on_resize(int w, int h)
+	{
+		LLOG("on_resize") << w << " " << h;
+	}
+
+	void on_mouse_wheel(int x, int y, int wheel)
+	{
+		LLOG("on_mouse_wheel") << x << " " << y << " " << wheel;
 	}
 }
 
@@ -151,8 +165,19 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		LLOG() << ttos(1537074478);
-		LLOG() << stot("2018-09-16 13:07:58");
+		boost::asio::io_service service;
+
+		timer_t timer(service, 1000,
+			[&](int period_ms, uint64_t count)
+			{
+				LLOG("timer") << count;
+			}
+		);
+
+		timer.run(10);
+
+		// LLOG() << ttos(1537074478);
+		// LLOG() << stot("2018-09-16 13:07:58");
 
 		jvalue_t val;
 
@@ -231,13 +256,26 @@ int main(int argc, char** argv)
 
 		test_chipmunk2d();
 
-		std::thread update_thread([]() { while(window_t::ready()) on_update(); });
+		std::thread update_thread(
+			[&]()
+			{
+				service.run();
 
-		sig_win_create.connect(boost::bind(on_create));
-		sig_win_destroy.connect(boost::bind(on_destroy));
+				// while(window_t::ready())
+				// {
+				// 	on_update();
+				// }
+			}
+		);
+
+		sig_win_create.connect(boost::bind(on_create, _1, _2));
+		sig_win_resize.connect(boost::bind(on_resize, _1, _2));
 		sig_win_render.connect(boost::bind(on_render));
+		sig_win_close.connect(boost::bind(on_close));
 
-		window_t::create(1334, 750, 0xFFFFFF);
+		sig_mouse_wheel.connect(boost::bind(on_mouse_wheel, _1, _2, _3));
+
+		window_t::create(1334, 750, 0xA6A6A6);
 
 		if(e_ptr)
 		{
