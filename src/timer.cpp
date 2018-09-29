@@ -36,6 +36,7 @@ void timer_t::run(uint64_t limit /* = 0 */)
 {
 	if(!running_)
 	{
+		count = 0;
 		limit_ = limit;
 		running_ = true;
 
@@ -47,9 +48,7 @@ void timer_t::stop()
 {
 	if(running_)
 	{
-		count_ = 0;
 		running_ = false;
-
 		timer_->cancel();
 	}
 }

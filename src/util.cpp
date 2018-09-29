@@ -89,7 +89,7 @@ std::string urlencode(const std::string& s)
 
 	for(int i = 0, len = s.length(); i < len; ++i)
 	{
-		const char& c = s[i];
+		char c = s[i];
 
 		if((c >= 48 && c <= 57) || // 0-9
 			(c >= 65 && c <= 90) || // A-Z
