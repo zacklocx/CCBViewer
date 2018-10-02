@@ -30,7 +30,7 @@ boost::signals2::signal<void(int)> sig_key_down;
 
 namespace
 {
-	bool ready_ = false;
+	bool is_ready_ = false;
 
 	int width_ = 0;
 	int height_ = 0;
@@ -39,7 +39,7 @@ namespace
 	int mouse_y_ = 0;
 	int mouse_btn_ = 0;
 
-	std::unordered_map<int, bool> key_map_;
+	std::unordered_map<int, bool> key_down_;
 
 	void reshape(int width, int height)
 	{
@@ -76,7 +76,7 @@ namespace
 
 	void close()
 	{
-		ready_ = false;
+		is_ready_ = false;
 
 		imgui_glut_shutdown();
 		sig_win_close();
@@ -164,7 +164,7 @@ namespace
 				io.KeysDown[key] = true;
 			}
 
-			key_map_[key] = true;
+			key_down_[key] = true;
 			sig_key_down(key);
 		}
 	}
@@ -177,7 +177,7 @@ namespace
 			io.KeysDown[key] = false;
 		}
 
-		key_map_[key] = false;
+		key_down_[key] = false;
 		sig_key_up(key);
 	}
 
@@ -186,7 +186,7 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = true;
 
-		key_map_[key] = true;
+		key_down_[key] = true;
 		sig_key_down(key);
 	}
 
@@ -195,14 +195,14 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = false;
 
-		key_map_[key] = false;
+		key_down_[key] = false;
 		sig_key_up(key);
 	}
 }
 
-bool window_t::ready()
+bool window_t::is_ready()
 {
-	return ready_;
+	return is_ready_;
 }
 
 int window_t::width()
@@ -232,7 +232,7 @@ int window_t::mouse_btn()
 
 bool window_t::is_key_down(int key)
 {
-	return key_map_[key];
+	return key_down_[key];
 }
 
 void window_t::create(int width, int height, int color)
@@ -273,7 +273,7 @@ void window_t::create(int width, int height, int color)
 	glutSpecialFunc(special_key_down);
 	glutSpecialUpFunc(special_key_up);
 
-	ready_ = true;
+	is_ready_ = true;
 
 	sig_win_create(width_, height_);
 

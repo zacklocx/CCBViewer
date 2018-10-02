@@ -7,7 +7,7 @@
 class window_t
 {
 public:
-	static bool ready();
+	static bool is_ready();
 
 	static int width();
 	static int height();
