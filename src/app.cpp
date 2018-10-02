@@ -17,6 +17,7 @@
 #include "render.h"
 #include "window.h"
 #include "log.h"
+#include "thread.h"
 
 #include "a.h"
 #include "demo.h"
@@ -217,17 +218,7 @@ int main(int argc, char** argv)
 		// 	jsave("./bin/demo2.json", val);
 		//  }
 
-		std::thread update_thread(
-			[&]()
-			{
-				service.run();
-
-				// while(window_t::ready())
-				// {
-				// 	on_update();
-				// }
-			}
-		);
+		thread_t<join> update_thread([&]() { service.run(); });
 
 		sig_win_create.connect(boost::bind(on_create, _1, _2));
 		sig_win_resize.connect(boost::bind(on_resize, _1, _2));
@@ -242,8 +233,6 @@ int main(int argc, char** argv)
 		{
 			std::rethrow_exception(e_ptr);
 		}
-
-		update_thread.join();
 	}
 	catch(std::exception& e)
 	{

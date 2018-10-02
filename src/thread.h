@@ -5,9 +5,9 @@
 #include <thread>
 #include <utility>
 
-enum class thread_exec_t { join, detach };
+enum { join, detach };
 
-template<thread_exec_t>
+template<int>
 class thread_t
 {
 public:
@@ -34,13 +34,13 @@ private:
 };
 
 template<>
-inline void thread_t<thread_exec_t::join>::join_or_detach()
+inline void thread_t<join>::join_or_detach()
 {
 	thread_.join();
 }
 
 template<>
-inline void thread_t<thread_exec_t::detach>::join_or_detach()
+inline void thread_t<detach>::join_or_detach()
 {
 	thread_.detach();
 }
