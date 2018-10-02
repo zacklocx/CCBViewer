@@ -20,7 +20,7 @@ public:
 	int period() const;
 	uint64_t count() const;
 	uint64_t limit() const;
-	bool running() const;
+	bool is_running() const;
 
 	void run(uint64_t limit = 0);
 	void stop();
@@ -28,7 +28,7 @@ public:
 private:
 	int period_ms_;
 	uint64_t count_, limit_;
-	bool running_;
+	bool is_running_;
 
 	handler_type handler_;
 

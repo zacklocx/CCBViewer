@@ -7,7 +7,7 @@
 #include <boost/bind.hpp>
 
 timer_t::timer_t(boost::asio::io_service& service, int period_ms, handler_type handler)
-		: period_ms_(period_ms), count_(0), limit_(0), running_(false)
+		: period_ms_(period_ms), count_(0), limit_(0), is_running_(false)
 		, handler_(std::move(handler))
 		, timer_(std::make_shared<boost::asio::steady_timer>(std::ref(service), std::chrono::milliseconds(period_ms)))
 {}
@@ -27,18 +27,18 @@ uint64_t timer_t::limit() const
 	return limit_;
 }
 
-bool timer_t::running() const
+bool timer_t::is_running() const
 {
-	return running_;
+	return is_running_;
 }
 
 void timer_t::run(uint64_t limit /* = 0 */)
 {
-	if(!running_)
+	if(!is_running_)
 	{
 		count_ = 0;
 		limit_ = limit;
-		running_ = true;
+		is_running_ = true;
 
 		timer_->async_wait(boost::bind(&timer_t::handle_wait, this, boost::asio::placeholders::error));
 	}
@@ -46,9 +46,9 @@ void timer_t::run(uint64_t limit /* = 0 */)
 
 void timer_t::stop()
 {
-	if(running_)
+	if(is_running_)
 	{
-		running_ = false;
+		is_running_ = false;
 		timer_->cancel();
 	}
 }
