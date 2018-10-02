@@ -84,7 +84,7 @@ namespace
 
 	void on_create(int width, int height)
 	{
-		if(window_t::ready())
+		if(window_t::is_ready())
 		{
 			LLOG("on_create") << width << " " << height;
 		}

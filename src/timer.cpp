@@ -36,7 +36,7 @@ void timer_t::run(uint64_t limit /* = 0 */)
 {
 	if(!running_)
 	{
-		count = 0;
+		count_ = 0;
 		limit_ = limit;
 		running_ = true;
 
