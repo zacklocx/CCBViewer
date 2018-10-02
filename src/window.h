@@ -16,7 +16,7 @@ public:
 	static int mouse_y();
 	static int mouse_btn();
 
-	static bool key_down(int key);
+	static bool is_key_down(int key);
 
 	static void create(int width, int height, int color);
 	static void close();

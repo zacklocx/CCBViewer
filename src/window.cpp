@@ -230,7 +230,7 @@ int window_t::mouse_btn()
 	return mouse_btn_;
 }
 
-bool window_t::key_down(int key)
+bool window_t::is_key_down(int key)
 {
 	return key_map_[key];
 }
