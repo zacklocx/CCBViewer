@@ -17,7 +17,7 @@ public:
 
 	timer_t(boost::asio::io_service& service, int period_ms, handler_type handler);
 
-	int period() const;
+	int period_ms() const;
 	uint64_t count() const;
 	uint64_t limit() const;
 	bool is_running() const;
@@ -34,7 +34,7 @@ private:
 
 	std::shared_ptr<boost::asio::steady_timer> timer_;
 
-	void handle_wait(const boost::system::error_code& ec);
+	void operator()(const boost::system::error_code& ec);
 };
 
 #endif /* TIMER_INCLUDED */

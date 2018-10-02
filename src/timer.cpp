@@ -12,7 +12,7 @@ timer_t::timer_t(boost::asio::io_service& service, int period_ms, handler_type h
 		, timer_(std::make_shared<boost::asio::steady_timer>(std::ref(service), std::chrono::milliseconds(period_ms)))
 {}
 
-int timer_t::period() const
+int timer_t::period_ms() const
 {
 	return period_ms_;
 }
@@ -40,7 +40,7 @@ void timer_t::run(uint64_t limit /* = 0 */)
 		limit_ = limit;
 		is_running_ = true;
 
-		timer_->async_wait(boost::bind(&timer_t::handle_wait, this, boost::asio::placeholders::error));
+		timer_->async_wait(boost::bind(&timer_t::operator(), this, boost::asio::placeholders::error));
 	}
 }
 
@@ -53,7 +53,7 @@ void timer_t::stop()
 	}
 }
 
-void timer_t::handle_wait(const boost::system::error_code& ec)
+void timer_t::operator()(const boost::system::error_code& ec)
 {
 	if(!ec)
 	{
@@ -67,7 +67,7 @@ void timer_t::handle_wait(const boost::system::error_code& ec)
 		if(0 == limit_ || count_ < limit_)
 		{
 			timer_->expires_at(timer_->expires_at() + std::chrono::milliseconds(period_ms_));
-			timer_->async_wait(boost::bind(&timer_t::handle_wait, this, boost::asio::placeholders::error));
+			timer_->async_wait(boost::bind(&timer_t::operator(), this, boost::asio::placeholders::error));
 		}
 		else
 		{
