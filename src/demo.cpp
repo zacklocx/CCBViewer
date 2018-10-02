@@ -3,7 +3,7 @@
 
 #include <GL/freeglut.h>
 
-#include "llog.h"
+#include "log.h"
 #include "window.h"
 
 demo_t::demo_t()
@@ -32,11 +32,11 @@ void demo_t::draw() const
 	{
 		if(const_cast<texture_t&>(tex_).load("/Users/zacklocx/tmp/tex.jpg"))
 		{
-			LLOG("tex_id") << tex_.id();
+			LOG("tex_id") << tex_.id();
 		}
 		else
 		{
-			LLOG("fail load tex");
+			LOG("fail load tex");
 		}
 	}
 	else

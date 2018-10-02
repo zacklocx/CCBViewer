@@ -6,7 +6,7 @@
 
 #include <FreeImage.h>
 
-#include "llog.h"
+#include "log.h"
 
 texture_t::data_t::data_t()
 	: id_(0), width_(0), height_(0)
@@ -16,7 +16,7 @@ texture_t::data_t::~data_t()
 {
 	if(glIsTexture(id_))
 	{
-		LLOG("~data");
+		LOG("~data");
 		glDeleteTextures(1, &id_);
 		id_ = 0;
 	}
@@ -25,12 +25,12 @@ texture_t::data_t::~data_t()
 texture_t::texture_t()
 	: data_(std::make_shared<texture_t::data_t>())
 {
-	// LLOG("texture") << data_.use_count();
+	// LOG("texture") << data_.use_count();
 }
 
 texture_t::~texture_t()
 {
-	//LLOG("~texture") << data_.use_count();
+	//LOG("~texture") << data_.use_count();
 }
 
 unsigned int texture_t::id() const

@@ -1,29 +1,23 @@
 
-#ifndef LLOG_INCLUDED
-#define LLOG_INCLUDED
+#ifndef LOG_INCLUDED
+#define LOG_INCLUDED
 
-#include <string>
-#include <iostream>
-
-#ifdef APP_DEBUG
 #include <mutex>
 #include <chrono>
+#include <string>
 #include <sstream>
 #include <iomanip>
-#endif
+#include <iostream>
 
-class llog_t
+class log_t
 {
 public:
-	llog_t(const std::string& tag = "", std::ostream& out = std::cout)
-	#ifdef APP_DEBUG
+	log_t(const std::string& tag = "", std::ostream& out = std::cout)
 		: tag_(tag), out_(out)
-	#endif
 	{}
 
-	~llog_t()
+	~log_t()
 	{
-	#ifdef APP_DEBUG
 		stream_ << "\n";
 
 		auto now = std::chrono::system_clock::now();
@@ -44,27 +38,21 @@ public:
 			out_ << stream_.str();
 			out_.flush();
 		}
-	#endif
 	}
 
 	template<typename T>
-	llog_t& operator <<(const T& t)
+	log_t& operator<<(const T& t)
 	{
-	#ifdef APP_DEBUG
 		stream_ << t;
-	#endif
-
 		return *this;
 	}
 
 private:
-#ifdef APP_DEBUG
 	std::string tag_;
 	std::ostream& out_;
 	std::ostringstream stream_;
-#endif
 };
 
-#define LLOG llog_t
+#define LOG log_t
 
-#endif /* LLOG_INCLUDED */
+#endif /* LOG_INCLUDED */

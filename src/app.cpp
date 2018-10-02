@@ -16,15 +16,10 @@
 #include "timer.h"
 #include "render.h"
 #include "window.h"
-#include "llog.h"
+#include "log.h"
 
 #include "a.h"
 #include "demo.h"
-
-#include <chipmunk/chipmunk.h>
-
-#define GRABBABLE_MASK_BIT (1 << 31)
-cpShapeFilter NOT_GRABBABLE_FILTER = {CP_NO_GROUP, ~GRABBABLE_MASK_BIT, ~GRABBABLE_MASK_BIT};
 
 namespace
 {
@@ -47,7 +42,7 @@ namespace
 
 		if(duration.count() >= 1000)
 		{
-			LLOG("fps") << floor(1000.0f * frame / duration.count());
+			LOG("fps") << floor(1000.0f * frame / duration.count());
 
 			frame = 0;
 			base_time = now;
@@ -58,12 +53,12 @@ namespace
 	{
 		// try
 		// {
-		// 	// LLOG("on_update");
+		// 	// LOG("on_update");
 
 		// 	float x = window_t::mouse_x();
 		// 	float y = window_t::mouse_y();
 
-		// 	// LLOG() << x << " " << y;
+		// 	// LOG() << x << " " << y;
 
 		// 	if(x > 1000)
 		// 	{
@@ -86,16 +81,16 @@ namespace
 	{
 		if(window_t::is_ready())
 		{
-			LLOG("on_create") << width << " " << height;
+			LOG("on_create") << width << " " << height;
 		}
 
-		LLOG() << glGetString(GL_RENDERER);
-		LLOG() << glGetString(GL_VERSION);
+		LOG() << glGetString(GL_RENDERER);
+		LOG() << glGetString(GL_VERSION);
 	}
 
 	void on_close()
 	{
-		LLOG("on_close");
+		LOG("on_close");
 	}
 
 	void on_render()
@@ -120,45 +115,13 @@ namespace
 
 	void on_resize(int w, int h)
 	{
-		LLOG("on_resize") << w << " " << h;
+		LOG("on_resize") << w << " " << h;
 	}
 
 	void on_mouse_wheel(int x, int y, int wheel)
 	{
-		LLOG("on_mouse_wheel") << x << " " << y << " " << wheel;
+		LOG("on_mouse_wheel") << x << " " << y << " " << wheel;
 	}
-}
-
-void test_chipmunk2d()
-{
-	cpSpace *space = cpSpaceNew();
-	cpSpaceSetIterations(space, 30);
-	cpSpaceSetGravity(space, cpv(0, -100));
-	cpSpaceSetSleepTimeThreshold(space, 0.5f);
-	
-	cpBody *body, *staticBody = cpSpaceGetStaticBody(space);
-	cpShape *shape;
-	
-	// Create segments around the edge of the screen.
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(staticBody, cpv(-320,-240), cpv(-320,240), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	cpShapeSetFilter(shape, NOT_GRABBABLE_FILTER);
-
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(staticBody, cpv(320,-240), cpv(320,240), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	cpShapeSetFilter(shape, NOT_GRABBABLE_FILTER);
-
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(staticBody, cpv(-320,-240), cpv(320,-240), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	cpShapeSetFilter(shape, NOT_GRABBABLE_FILTER);
-	
-	shape = cpSpaceAddShape(space, cpSegmentShapeNew(staticBody, cpv(-320,240), cpv(320,240), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	cpShapeSetFilter(shape, NOT_GRABBABLE_FILTER);
 }
 
 int main(int argc, char** argv)
@@ -170,14 +133,14 @@ int main(int argc, char** argv)
 		timer_t timer(service, 1000,
 			[&](int period_ms, uint64_t count)
 			{
-				LLOG("timer") << count;
+				LOG("timer") << count;
 			}
 		);
 
 		timer.run(10);
 
-		// LLOG() << ttos(1537074478);
-		// LLOG() << stot("2018-09-16 13:07:58");
+		// LOG() << ttos(1537074478);
+		// LOG() << stot("2018-09-16 13:07:58");
 
 		jvalue_t val;
 
@@ -195,13 +158,13 @@ int main(int argc, char** argv)
 
 		if(jquery(val, "test1", target))
 		{
-			LLOG() << "test1";
+			LOG() << "test1";
 			*target = "zacklocx";
 		}
 
 		if(jquery(val, "test2", target))
 		{
-			LLOG() << "test2";
+			LOG() << "test2";
 			*target = "22";
 		}
 
@@ -218,43 +181,41 @@ int main(int argc, char** argv)
 
 		// if(!jload("./bin/demo.json", val))
 		// {
-		// 	LLOG() << "json load failed";
+		// 	LOG() << "json load failed";
 		// }
 		// // if(!jparse("{\"value1\" : true, \"value2\" : false, \"value3\" : \"3.14\", \"value4\":\"bad\"}", val))
 		// // {
-		// // 	LLOG() << "malformed json";
+		// // 	LOG() << "malformed json";
 		// // }
 		// else
 		// {
-		// 	//LLOG() << jtob(jget(val, "value2"));
+		// 	//LOG() << jtob(jget(val, "value2"));
 
-		// 	LLOG("indent false") << jdump(val);
-		// 	LLOG("indent true") << jdump(val);
-		// 	LLOG("value4") << jdump(jget(val, "value4"));
+		// 	LOG("indent false") << jdump(val);
+		// 	LOG("indent true") << jdump(val);
+		// 	LOG("value4") << jdump(jget(val, "value4"));
 
 		// 	if(jtob(jget(val, "value2")))
 		// 	{
-		// 		LLOG("true");
+		// 		LOG("true");
 		// 	}
 		// 	else
 		// 	{
-		// 		LLOG("false");
+		// 		LOG("false");
 		// 	}
 
-		// 	LLOG() << jtos(val);
-		// 	LLOG() << jtos(jget(val, "value1"));
+		// 	LOG() << jtos(val);
+		// 	LOG() << jtos(jget(val, "value1"));
 
-		// 	LLOG() << jtoi(jget(val, "value3"));
-		// 	LLOG() << jtos(jget(val, "value4"));
+		// 	LOG() << jtoi(jget(val, "value3"));
+		// 	LOG() << jtos(jget(val, "value4"));
 
 		// 	jset(val, "value3", 6.28f);
 
-		// 	LLOG() << jdump(val);
+		// 	LOG() << jdump(val);
 
 		// 	jsave("./bin/demo2.json", val);
 		//  }
-
-		test_chipmunk2d();
 
 		std::thread update_thread(
 			[&]()
@@ -286,7 +247,7 @@ int main(int argc, char** argv)
 	}
 	catch(std::exception& e)
 	{
-		LLOG("exception") << e.what();
+		LOG("exception") << e.what();
 	}
 
 	return 0;

@@ -2,9 +2,6 @@ project(CCBViewer)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set(APP_NAME ${PROJECT_NAME})
-
-add_definitions(-DAPP_DEBUG)
 add_definitions(-DSOCI_USE_BOOST)
 add_definitions(-DAVHTTP_ENABLE_ZLIB)
 add_definitions(-DAVHTTP_ENABLE_OPENSSL)
@@ -41,11 +38,9 @@ include_directories(${FREEGLUT_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/third_party/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
-include_directories(${CMAKE_SOURCE_DIR}/third_party/Chipmunk2D/include)
 
 file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/imgui/*.cpp)
-file(GLOB CP2D_C ${CMAKE_SOURCE_DIR}/third_party/Chipmunk2D/src/*.c)
 file(GLOB_RECURSE APP_CPP *.cpp)
 
-add_executable(${APP_NAME} ${IMGUI_CPP} ${CP2D_C} ${APP_CPP})
-target_link_libraries(${APP_NAME} ${EXTRA_LIBS})
+add_executable(${PROJECT_NAME} ${IMGUI_CPP} ${APP_CPP})
+target_link_libraries(${PROJECT_NAME} ${EXTRA_LIBS})
