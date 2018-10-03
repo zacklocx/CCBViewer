@@ -13,7 +13,7 @@
 class timer_t
 {
 public:
-	typedef std::function<void(int, uint64_t)> handler_type;
+	using handler_type = std::function<void(int, uint64_t)>;
 
 	timer_t(boost::asio::io_service& service, int period_ms, handler_type handler);
 
