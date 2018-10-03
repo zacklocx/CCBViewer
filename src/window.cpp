@@ -3,8 +3,6 @@
 
 #include <cctype>
 
-#include <unordered_map>
-
 #include <GL/freeglut.h>
 
 #include "imgui.h"
@@ -17,7 +15,7 @@
 boost::signals2::signal<void(int, int)> sig_win_create;
 boost::signals2::signal<void(int, int)> sig_win_resize;
 boost::signals2::signal<void()> sig_win_render;
-boost::signals2::signal<void()> sig_win_close;
+boost::signals2::signal<void()> sig_win_destroy;
 
 boost::signals2::signal<void(int, int)> sig_mouse_move;
 boost::signals2::signal<void(int, int, int)> sig_mouse_up;
@@ -39,7 +37,7 @@ namespace
 	int mouse_y_ = 0;
 	int mouse_btn_ = 0;
 
-	std::unordered_map<int, bool> key_down_;
+	bool key_down_[512];
 
 	void reshape(int width, int height)
 	{
@@ -79,7 +77,7 @@ namespace
 		is_ready_ = false;
 
 		imgui_glut_shutdown();
-		sig_win_close();
+		sig_win_destroy();
 	}
 
 	void mouse_move(int x, int y)
@@ -147,26 +145,19 @@ namespace
 
 	void normal_key_down(unsigned char key, int x, int y)
 	{
-		if(27 /* Escape */ == key)
+		ImGuiIO& io = ImGui::GetIO();
+
+		if(isprint(key))
 		{
-			glutLeaveMainLoop();
+			io.AddInputCharacter(key);
 		}
 		else
 		{
-			ImGuiIO& io = ImGui::GetIO();
-
-			if(isprint(key))
-			{
-				io.AddInputCharacter(key);
-			}
-			else
-			{
-				io.KeysDown[key] = true;
-			}
-
-			key_down_[key] = true;
-			sig_key_down(key);
+			io.KeysDown[key] = true;
 		}
+
+		key_down_[key] = true;
+		sig_key_down(key);
 	}
 
 	void normal_key_up(unsigned char key, int x, int y)
@@ -280,7 +271,7 @@ void window_t::create(int width, int height, int color)
 	glutMainLoop();
 }
 
-void window_t::close()
+void window_t::destroy()
 {
 	glutLeaveMainLoop();
 }
