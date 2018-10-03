@@ -2,6 +2,8 @@
 #ifndef LOG_INCLUDED
 #define LOG_INCLUDED
 
+#ifndef NDEBUG
+
 #include <mutex>
 #include <chrono>
 #include <string>
@@ -52,6 +54,19 @@ private:
 	std::ostream& out_;
 	std::ostringstream stream_;
 };
+
+#else
+
+class log_t
+{
+public:
+	log_t(...) {}
+
+	template<typename T>
+	log_t& operator<<(const T&) { return *this; }
+};
+
+#endif /* NDEBUG */
 
 #define LOG log_t
 
