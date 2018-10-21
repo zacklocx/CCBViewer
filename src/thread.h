@@ -5,15 +5,15 @@
 #include <thread>
 #include <utility>
 
-enum { join, detach };
+enum { JOIN, DETACH };
 
 template<int>
 class thread_t
 {
 public:
-	template<typename Func, typename... Args>
-	thread_t(Func&& func, Args&&... args)
-		: thread_(std::forward<Func>(func), std::forward<Args>(args)...)
+	template<typename F, typename... Args>
+	thread_t(F&& f, Args&&... args)
+		: thread_(std::forward<F>(f), std::forward<Args>(args)...)
 	{}
 
 	thread_t(const thread_t&) = delete;
@@ -34,13 +34,13 @@ private:
 };
 
 template<>
-inline void thread_t<join>::join_or_detach()
+inline void thread_t<JOIN>::join_or_detach()
 {
 	thread_.join();
 }
 
 template<>
-inline void thread_t<detach>::join_or_detach()
+inline void thread_t<DETACH>::join_or_detach()
 {
 	thread_.detach();
 }

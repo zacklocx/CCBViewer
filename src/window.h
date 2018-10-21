@@ -4,6 +4,8 @@
 
 #include <boost/signals2.hpp>
 
+enum { _2D, _3D };
+
 class window_t
 {
 public:
@@ -18,7 +20,7 @@ public:
 
 	static bool is_key_down(int key);
 
-	static void create(int width, int height, int color);
+	static void create(int mode, int width, int height, int color);
 	static void destroy();
 };
 

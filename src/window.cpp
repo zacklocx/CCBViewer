@@ -30,6 +30,8 @@ namespace
 {
 	bool is_ready_ = false;
 
+	int mode_ = _2D;
+
 	int width_ = 0;
 	int height_ = 0;
 
@@ -37,18 +39,26 @@ namespace
 	int mouse_y_ = 0;
 	int mouse_btn_ = 0;
 
-	bool key_down_[512];
+	bool is_is_key_down_[512];
 
 	void reshape(int width, int height)
 	{
-		width_ = width;
-		height_ = height;
+		width_ = (width != 0)? width : 1;
+		height_ = (height != 0)? height : 1;
 
 		glViewport(0, 0, width_, height_);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, width_, 0, height_, -1, 1);
+
+		if(_2D == mode_)
+		{
+			glOrtho(0.0, width_, 0.0, height_, -1.0, 1.0);
+		}
+		else
+		{
+			gluPerspective(45.0, 1.0 * width_ / height, 0.1, 100.0);
+		}
 
 		glMatrixMode(GL_MODELVIEW);
 
@@ -156,7 +166,7 @@ namespace
 			io.KeysDown[key] = true;
 		}
 
-		key_down_[key] = true;
+		is_key_down_[key] = true;
 		sig_key_down(key);
 	}
 
@@ -168,7 +178,7 @@ namespace
 			io.KeysDown[key] = false;
 		}
 
-		key_down_[key] = false;
+		is_key_down_[key] = false;
 		sig_key_up(key);
 	}
 
@@ -177,7 +187,7 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = true;
 
-		key_down_[key] = true;
+		is_key_down_[key] = true;
 		sig_key_down(key);
 	}
 
@@ -186,7 +196,7 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[key] = false;
 
-		key_down_[key] = false;
+		is_key_down_[key] = false;
 		sig_key_up(key);
 	}
 }
@@ -223,10 +233,10 @@ int window_t::mouse_btn()
 
 bool window_t::is_key_down(int key)
 {
-	return key_down_[key];
+	return is_key_down_[key];
 }
 
-void window_t::create(int width, int height, int color)
+void window_t::create(int mode, int width, int height, int color)
 {
 	int argc = 1;
 	char* argv[] = { (char*)"", 0 };
@@ -235,18 +245,28 @@ void window_t::create(int width, int height, int color)
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-	width_ = width;
-	height_ = height;
+	mode_ = (_2D == mode || _3D == mode)? mode : _2D;
 
-	int x = (glutGet(GLUT_SCREEN_WIDTH) - width_) / 2;
-	int y = (glutGet(GLUT_SCREEN_HEIGHT) - height_) / 2;
+	int screen_width = glutGet(GLUT_SCREEN_WIDTH);
+	int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
+
+	width_ = (width > 0)? width : screen_width;
+	height_ = (height > 0)? height : screen_height;
 
 	glutInitWindowSize(width_, height_);
-	glutInitWindowPosition(x, y);
+	glutInitWindowPosition((screen_width - width_) / 2, (screen_height - height_) / 2);
 
 	glutCreateWindow("");
 
 	glClearColor(RED(color), GREEN(color), BLUE(color), 1.0);
+	glClearDepth(1.0);
+
+	glEnable(GL_TEXTURE_2D);
+	glShadeModel(GL_SMOOTH);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	imgui_glut_init();
 
