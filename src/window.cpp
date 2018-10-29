@@ -242,7 +242,7 @@ void window_t::create(int mode, int width, int height, int color)
 	char* argv[] = { (char*)"", 0 };
 
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	mode_ = (_2D == mode || _3D == mode)? mode : _2D;
@@ -261,12 +261,19 @@ void window_t::create(int mode, int width, int height, int color)
 	glClearColor(RED(color), GREEN(color), BLUE(color), 1.0);
 	glClearDepth(1.0);
 
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	glEnable(GL_MULTISAMPLE);
 
 	imgui_glut_init();
 
