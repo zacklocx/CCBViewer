@@ -99,7 +99,7 @@ bool texture_t::load(const std::string& path)
 
 void texture_t::unload()
 {
-	if(info_)
+	if(!info_)
 	{
 		return;
 	}
