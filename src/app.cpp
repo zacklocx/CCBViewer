@@ -9,9 +9,9 @@
 
 #include <GL/gl.h>
 
-#include <json/json.h>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
-#include "json.h"
 //#include "util.h"
 #include "timer.h"
 #include "render.h"
@@ -30,6 +30,7 @@ namespace
 	std::exception_ptr e_ptr = nullptr;
 
 	demo_t demo;
+	texture_t texture;
 
 	void fps()
 	{
@@ -52,30 +53,30 @@ namespace
 
 	void on_update()
 	{
-		// try
-		// {
-		// 	// LOG("on_update");
+		try
+		{
+			LOG("on_update");
 
-		// 	float x = window_t::mouse_x();
-		// 	float y = window_t::mouse_y();
+			float x = window_t::mouse_x();
+			//float y = window_t::mouse_y();
 
 		// 	// LOG() << x << " " << y;
 
-		// 	if(x > 1000)
-		// 	{
-		// 		throw std::logic_error("x is bigger than 1000");
-		// 	}
+			if(x > 1000)
+			{
+				throw std::logic_error("x is bigger than 1000");
+			}
 
 		// 	// demo.set_x(x);
 		// 	// demo.set_y(y);
-		// }
-		// catch(...)
-		// {
-		// 	std::lock_guard<std::mutex> lock(e_mutex);
+		}
+		catch(...)
+		{
+			std::lock_guard<std::mutex> lock(e_mutex);
 
-		// 	e_ptr = std::current_exception();
-		// 	window_t::destroy();
-		// }
+			e_ptr = std::current_exception();
+			window_t::destroy();
+		}
 	}
 
 	void on_create(int width, int height)
@@ -87,11 +88,14 @@ namespace
 
 		LOG() << glGetString(GL_RENDERER);
 		LOG() << glGetString(GL_VERSION);
+
+		texture.load("/Users/zacklocx/tmp/tex.jpg");
 	}
 
-	void on_close()
+	void on_destroy()
 	{
-		LOG("on_close");
+		LOG("on_destroy");
+		texture_t::clear();
 	}
 
 	void on_render()
@@ -111,12 +115,33 @@ namespace
 		render(root_cmd);
 		root_cmd.clear();
 
+		float x = window_t::width() / 2, y = window_t::height() / 2;
+		float w = texture.width(), h = texture.height();
+		float r = 45.0f;
+
+		texture.draw(x, y, w, h, r);
+
+		if(window_t::is_key_down('D'))
+		{
+			exit(-1);
+		}
+
 		fps();
 	}
 
 	void on_resize(int w, int h)
 	{
 		LOG("on_resize") << w << " " << h;
+	}
+
+	void on_key_down(int key)
+	{
+		LOG("on_key_down") << key;
+
+		if(27 /* Escape */ == key)
+		{
+			window_t::destroy();
+		}
 	}
 
 	void on_mouse_wheel(int x, int y, int wheel)
@@ -131,43 +156,66 @@ int main(int argc, char** argv)
 	{
 		boost::asio::io_service service;
 
-		timer_t timer(service, 1000,
+		timer_t timer(service, 10,
 			[&](int period_ms, uint64_t count)
 			{
-				LOG("timer") << count;
+				LOG("ad1") << &timer;
+				LOG("count") << timer.count();
+
+				if(timer.is_running())
+				{
+					LOG("running");
+				}
+				else
+				{
+					LOG("not running");
+				}
+
+				timer.stop();
+
+				if(window_t::is_ready())
+				{
+					on_update();
+				}
 			}
 		);
 
-		timer.run(10);
+		LOG("ad2") << &timer;
+
+		timer.run();
+
+		json j;
+		j["pi"] = 3.14;
+		j["name"] = "zacklocx";
 
 		// LOG() << ttos(1537074478);
 		// LOG() << stot("2018-09-16 13:07:58");
 
-		jvalue_t val;
+		// jvalue_t val;
 
-		val["test1"] = jnull;
-		val["test2"] = jint;
-		val["test3"] = juint;
-		val["test4"] = jreal;
-		val["test5"] = jstr;
-		val["test6"] = jbool;
-		val["test7"] = jarr;
-		val["test8"] = jobj;
-		val["test9"] = jnull;
+		// val["test1"] = jnull;
+		// val["test2"] = jint;
+		// val["test3"] = juint;
+		// val["test4"] = jreal;
+		// val["test5"] = jstr;
+		// val["test6"] = jbool;
+		// val["test7"] = jarr;
+		// val["test8"] = jobj;
+		// val["test9"] = jnull;
 
-		jvalue_t* target;
+		// jvalue_t* target;
 
-		if(jquery(val, "test1", target))
-		{
-			LOG() << "test1";
-			*target = "zacklocx";
-		}
+		// if(jquery(val, "test1", target))
+		// {
+		// 	LOG() << "test1";
+		// 	*target = "zacklocx";
+		// }
 
-		if(jquery(val, "test2", target))
-		{
-			LOG() << "test2";
-			*target = "22";
-		}
+		// if(jquery(val, "test2", target))
+		// {
+		// 	LOG() << "test2";
+		// 	*target = "22";
+		// }
 
 		// val["test7"][0] = jint;
 		// val["test7"][3] = jstr;
@@ -178,7 +226,7 @@ int main(int argc, char** argv)
 		// jset(val, "test7.2", 2);
 		// jset(val, "test7.4", 4);
 
-		jsave("bin/test.json", val);
+		//jsave("bin/test.json", val);
 
 		// if(!jload("./bin/demo.json", val))
 		// {
@@ -218,16 +266,22 @@ int main(int argc, char** argv)
 		// 	jsave("./bin/demo2.json", val);
 		//  }
 
-		thread_t<join> update_thread([&]() { service.run(); });
+		thread_t<JOIN> update_thread([&]() { service.run(); });
 
 		sig_win_create.connect(boost::bind(on_create, _1, _2));
 		sig_win_resize.connect(boost::bind(on_resize, _1, _2));
 		sig_win_render.connect(boost::bind(on_render));
-		sig_win_close.connect(boost::bind(on_close));
+		sig_win_destroy.connect(boost::bind(on_destroy));
+
+		sig_win_destroy.connect([&]() { timer.stop(); });
+
+		sig_key_down.connect(boost::bind(on_key_down, _1));
 
 		sig_mouse_wheel.connect(boost::bind(on_mouse_wheel, _1, _2, _3));
 
-		window_t::create(1334, 750, 0xA6A6A6);
+		window_t::create(_2D, 1334, 750, 0xA6A6A6);
+
+		LOG("exit");
 
 		if(e_ptr)
 		{

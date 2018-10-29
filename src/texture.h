@@ -4,32 +4,36 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 class texture_t
 {
 public:
-	texture_t();
+	explicit texture_t(const std::string& path = "");
 	~texture_t();
+
+	bool load(const std::string& path);
+	void unload();
 
 	unsigned int id() const;
 
 	int width() const;
 	int height() const;
 
-	bool load(const std::string& path);
-	void draw(float x, float y, float width, float height) const;
+	void draw(float x, float y, float w, float h, float r) const;
+
+	static void clear();
 
 private:
-	struct data_t
+	struct info_t
 	{
-		data_t();
-		~data_t();
-
 		unsigned int id_;
 		int width_, height_;
 	};
 
-	std::shared_ptr<texture_t::data_t> data_;
+	std::shared_ptr<const info_t> info_;
+
+	static std::unordered_map<std::string, std::shared_ptr<const info_t>> cache_;
 };
 
 #endif /* TEXTURE_INCLUDED */

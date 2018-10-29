@@ -39,7 +39,7 @@ namespace
 	int mouse_y_ = 0;
 	int mouse_btn_ = 0;
 
-	bool is_is_key_down_[512];
+	bool is_key_down_[512];
 
 	void reshape(int width, int height)
 	{

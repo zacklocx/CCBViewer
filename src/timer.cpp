@@ -64,14 +64,17 @@ void timer_t::operator()(const boost::system::error_code& ec)
 			handler_(period_ms_, count_);
 		}
 
-		if(0 == limit_ || count_ < limit_)
+		if(is_running_)
 		{
-			timer_->expires_at(timer_->expires_at() + std::chrono::milliseconds(period_ms_));
-			timer_->async_wait(boost::bind(&timer_t::operator(), this, boost::asio::placeholders::error));
-		}
-		else
-		{
-			stop();
+			if(0 == limit_ || count_ < limit_)
+			{
+				timer_->expires_at(timer_->expires_at() + std::chrono::milliseconds(period_ms_));
+				timer_->async_wait(boost::bind(&timer_t::operator(), this, boost::asio::placeholders::error));
+			}
+			else
+			{
+				stop();
+			}
 		}
 	}
 }

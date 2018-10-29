@@ -28,21 +28,21 @@ void demo_t::draw() const
 
 	// glPopMatrix();
 
-	if(0 == tex_.id())
-	{
-		if(const_cast<texture_t&>(tex_).load("/Users/zacklocx/tmp/tex.jpg"))
-		{
-			LOG("tex_id") << tex_.id();
-		}
-		else
-		{
-			LOG("fail load tex");
-		}
-	}
-	else
-	{
-		tex_.draw(window_t::width() / 2, window_t::height() / 2, tex_.width(), tex_.height());
-	}
+	// if(0 == tex_.id())
+	// {
+	// 	if(const_cast<texture_t&>(tex_).load("/Users/zacklocx/tmp/tex.jpg"))
+	// 	{
+	// 		// LOG("tex_id") << tex_.id();
+	// 	}
+	// 	else
+	// 	{
+	// 		LOG("fail load tex");
+	// 	}
+	// }
+	// else
+	// {
+	// 	tex_.draw(window_t::width() / 2, window_t::height() / 2, tex_.width(), tex_.height());
+	// }
 }
 
 void render(const demo_t& d)

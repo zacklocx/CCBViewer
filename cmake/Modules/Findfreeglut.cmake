@@ -6,16 +6,16 @@
 
 if(APPLE)
 	find_path(FREEGLUT_INCLUDE_DIR GL/freeglut.h
-	          HINTS /usr/X11R6/include)
+	          HINTS /usr/X11/include)
 
 	find_library(GL_LIBRARY NAMES gl libgl
-	             HINTS /usr/X11R6/lib)
+	             HINTS /usr/X11/lib)
 
 	find_library(GLU_LIBRARY NAMES glu libglu
-	             HINTS /usr/X11R6/lib)
+	             HINTS /usr/X11/lib)
 
 	find_library(FREEGLUT_LIBRARY NAMES glut libglut
-	             HINTS /usr/X11R6/lib NO_DEFAULT_PATH)
+	             HINTS /usr/X11/lib NO_DEFAULT_PATH)
 else()
 	find_path(FREEGLUT_INCLUDE_DIR GL/freeglut.h
 	          HINTS /usr/include)
