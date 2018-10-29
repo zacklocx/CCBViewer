@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 
 #include "log.h"
+#include "draw.h"
 #include "util.h"
 #include "timer.h"
 #include "thread.h"
@@ -90,6 +91,10 @@ int main(int argc, char** argv)
 			[&]()
 			{
 				tex.draw(tex_state.x, tex_state.y, tex_state.w, tex_state.h, tex_state.r);
+
+				use_color("red");
+				draw_circle(window_t::mouse_x(), window_t::mouse_y(), 0.0f, 32.0f);
+				use_color("white");
 
 				fps();
 			}
