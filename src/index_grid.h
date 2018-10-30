@@ -9,6 +9,8 @@
 class index_grid_t
 {
 public:
+	index_grid_t();
+
 	void init(float cell_space, float sim_width, float sim_height);
 
 	float get_cell_space() const;
