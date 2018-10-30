@@ -1,0 +1,67 @@
+
+#ifndef LINE_ME_INCLUDED
+#define LINE_ME_INCLUDED
+
+#include <vector>
+#include <unordered_set>
+
+#include <glm/glm.hpp>
+
+#include "obb.h"
+#include "index_grid.h"
+#include "particle_emitter.h"
+
+#include "poly6.h"
+#include "spiky.h"
+#include "viscosity.h"
+
+class line_me_t
+{
+public:
+	line_me_t();
+
+	bool init();
+	void reset();
+	void render();
+	void idle();
+
+private:
+	int win_width_, win_height_;
+	float win_scale_x_, win_scale_y_;
+
+	float main_area_x0_, main_area_y0_;
+	float main_area_x1_, main_area_y1_;
+
+	float side_area_x0_, side_area_y0_;
+	float side_area_x1_, side_area_y1_;
+
+	float max_force_;
+	std::vector<fluid_particle_t*> particles_;
+
+	index_grid_t index_grid_;
+	particle_emitter_t emitter_;
+
+	poly6_t poly6_;
+	spiky_t spiky_;
+	viscosity_t viscosity_;
+
+	bool ready_;
+	glm::vec2 end_point_[2], mouse_pos_;
+
+	std::vector<obb_t> draw_obb_, edge_obb_;
+
+	bool obb_locked_;
+	glm::vec2 center_, offset_;
+
+	glm::vec2 elastic_start_;
+	obb_t elastic_obb_;
+	std::unordered_set<int> selected_obb_;
+
+	float rot_speed_;
+
+	bool leak_, show_edge_;
+
+	int force_coeff_;
+};
+
+#endif /* LINE_ME_INCLUDED */

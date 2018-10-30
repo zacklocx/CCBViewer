@@ -160,7 +160,7 @@ static void hex_to_rgb(const char* hex, unsigned char* rgb)
 	}
 
 	char c;
-	int buf[6];
+	int tmp[6];
 
 	for(int i = 0; i < 6; ++i)
 	{
@@ -168,16 +168,16 @@ static void hex_to_rgb(const char* hex, unsigned char* rgb)
 
 		if(c >= '0' && c <= '9')
 		{
-			buf[i] = c - '0';
+			tmp[i] = c - '0';
 		}
 		else
 		{
-			buf[i] = (c - 'A') + 10;
+			tmp[i] = (c - 'A') + 10;
 		}
 
 		if(i & 1)
 		{
-			rgb[i >> 1] = (buf[i - 1] << 4) + buf[i];
+			rgb[i >> 1] = (tmp[i - 1] << 4) + tmp[i];
 		}
 	}
 }

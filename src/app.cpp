@@ -14,6 +14,8 @@
 #include "window.h"
 #include "texture.h"
 
+#include "line_me.h"
+
 void fps()
 {
 	static int frame = 0;
@@ -39,34 +41,14 @@ int main(int argc, char** argv)
 	{
 		boost::asio::io_service service;
 
-		texture_t tex;
-
-		struct tex_state_t
-		{
-			float x, y, w, h, r;
-		};
-
-		tex_state_t tex_state{ 400.0f, 400.0f, 100.0f, 100.0f, 0.0f };
+		line_me_t game;
 
 		timer_t timer(service, 10,
 			[&](int, uint64_t)
 			{
 				if(window_t::is_ready())
 				{
-					if(tex_state.x = tex_state.x + 1.0f; tex_state.x > window_t::width())
-					{
-						tex_state.x = 0.0f;
-					}
-
-					if(tex_state.y = tex_state.y - 1.0f; tex_state.y < 0.0f)
-					{
-						tex_state.y = window_t::height();
-					}
-
-					if(tex_state.r = tex_state.r + 1.0f; tex_state.r > 360.0f)
-					{
-						tex_state.r = tex_state.r - 360.0f;
-					}
+					game.idle();
 				}
 			}
 		);
@@ -83,18 +65,14 @@ int main(int argc, char** argv)
 				LOG() << glGetString(GL_RENDERER);
 				LOG() << glGetString(GL_VERSION);
 
-				tex.load("/Users/zacklocx/tmp/tex.jpg");
+				game.init();
 			}
 		);
 
 		sig_win_render.connect(
 			[&]()
 			{
-				tex.draw(tex_state.x, tex_state.y, tex_state.w, tex_state.h, tex_state.r);
-
-				use_color("red");
-				draw_circle(window_t::mouse_x(), window_t::mouse_y(), 0.0f, 32.0f);
-				use_color("white");
+				game.render();
 
 				fps();
 			}
