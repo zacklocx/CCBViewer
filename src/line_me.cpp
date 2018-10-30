@@ -74,6 +74,19 @@ bool line_me_t::init()
 	force_coeff_ = 0;
 }
 
+void line_me_t::resize(int w, int h)
+{
+	glViewport(0, 0, w, h);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glOrtho(sim_left, sim_right, sim_bottom, sim_top, -1.0f, 1.0f);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
 void line_me_t::reset()
 {
 	particles_.clear();

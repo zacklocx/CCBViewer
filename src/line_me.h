@@ -21,6 +21,7 @@ public:
 	line_me_t();
 
 	bool init();
+	void resize(int w, int h);
 	void reset();
 	void render();
 	void idle();

@@ -69,6 +69,14 @@ int main(int argc, char** argv)
 			}
 		);
 
+		sig_win_resize.connect(
+			[&](int width, int height)
+			{
+				LOG("on_resize") << width << " " << height;
+				game.resize(width, height);
+			}
+		);
+
 		sig_win_render.connect(
 			[&]()
 			{
