@@ -18,7 +18,7 @@ const float sim_top = 800.0f;
 const float sim_width = sim_right - sim_left;
 const float sim_height = sim_top - sim_bottom;
 
-const float cell_space = sim_width / 64.0f;
+const float cell_space = sim_width / 60.0f;
 
 const float particle_mass = cell_space * 25.0f;
 

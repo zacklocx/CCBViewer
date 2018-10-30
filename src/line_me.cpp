@@ -71,7 +71,7 @@ bool line_me_t::init()
 
 	rot_speed_ = 6.0f;
 
-	leak_ = true;
+	leak_ = false;
 	show_edge_ = false;
 
 	force_coeff_ = 0;
