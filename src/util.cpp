@@ -6,6 +6,7 @@
 #include <cstdlib>
 
 #include <chrono>
+#include <random>
 #include <sstream>
 #include <iomanip>
 
@@ -64,6 +65,24 @@ uint64_t stot(const std::string& s)
 	auto duration = std::chrono::system_clock::from_time_t(std::mktime(&tm)).time_since_epoch();
 
 	return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+}
+
+int rand_int(int from, int to)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis(from, to);
+
+	return dis(gen);
+}
+
+double rand_real(double from, double to)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(from, to);
+
+	return dis(gen);
 }
 
 std::string md5(const std::string& s)

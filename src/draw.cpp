@@ -219,6 +219,36 @@ void use_color(const char* color_str)
 	glColor3ubv(rgb);
 }
 
+static const GLenum blend_factor[] =
+{
+	GL_ZERO,
+	GL_ONE,
+	GL_SRC_COLOR,
+	GL_ONE_MINUS_SRC_COLOR,
+	GL_SRC_ALPHA,
+	GL_ONE_MINUS_SRC_ALPHA,
+	GL_DST_ALPHA,
+	GL_ONE_MINUS_DST_ALPHA,
+	GL_DST_COLOR,
+	GL_ONE_MINUS_DST_COLOR
+};
+
+static const int blend_factor_num = sizeof(blend_factor) / sizeof(blend_factor[0]);
+
+void blend_mode(int src_index, int dst_index)
+{
+	if(src_index >= 0 && src_index <= blend_factor_num - 1 &&
+		dst_index >= 0 && dst_index <= blend_factor_num - 1)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(blend_factor[src_index], blend_factor[dst_index]);
+	}
+	else
+	{
+		glDisable(GL_BLEND);
+	}
+}
+
 void draw_line(float x1, float y1, float x2, float y2)
 {
 	glBegin(GL_LINES);
