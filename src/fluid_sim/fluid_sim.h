@@ -1,6 +1,6 @@
 
-#ifndef LINE_ME_INCLUDED
-#define LINE_ME_INCLUDED
+#ifndef FLUID_SIM_INCLUDED
+#define FLUID_SIM_INCLUDED
 
 #include <vector>
 #include <unordered_set>
@@ -15,10 +15,10 @@
 #include "spiky.h"
 #include "viscosity.h"
 
-class line_me_t
+class fluid_sim_t
 {
 public:
-	line_me_t();
+	fluid_sim_t();
 
 	bool init();
 	void resize(int w, int h);
@@ -74,4 +74,4 @@ private:
 	int force_coeff_;
 };
 
-#endif /* LINE_ME_INCLUDED */
+#endif /* FLUID_SIM_INCLUDED */

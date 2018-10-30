@@ -30,6 +30,8 @@ include_directories(${FREEGLUT_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/third_party/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
 
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
 set(EXTRA_LIBS ${EXTRA_LIBS} ${ZLIB_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${Boost_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENSSL_LIBRARIES})
@@ -39,8 +41,9 @@ set(EXTRA_LIBS ${EXTRA_LIBS} ${FREEIMAGE_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${FREEGLUT_LIBRARIES})
 set(EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
+file(GLOB MAIN_CPP ${CMAKE_SOURCE_DIR}/src/*.cpp)
 file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/imgui/*.cpp)
-file(GLOB_RECURSE APP_CPP *.cpp)
+file(GLOB_RECURSE FLUID_SIM_CPP ${CMAKE_SOURCE_DIR}/src/fluid_sim/*.cpp)
 
-add_executable(${PROJECT_NAME} ${IMGUI_CPP} ${APP_CPP})
+add_executable(${PROJECT_NAME} ${MAIN_CPP} ${IMGUI_CPP} ${FLUID_SIM_CPP})
 target_link_libraries(${PROJECT_NAME} ${EXTRA_LIBS})

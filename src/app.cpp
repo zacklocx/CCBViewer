@@ -14,7 +14,7 @@
 #include "window.h"
 #include "texture.h"
 
-#include "line_me.h"
+#include "fluid_sim/fluid_sim.h"
 
 void fps()
 {
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 	{
 		boost::asio::io_service service;
 
-		line_me_t game;
+		fluid_sim_t game;
 
 		timer_t timer(service, 10,
 			[&](int, uint64_t)

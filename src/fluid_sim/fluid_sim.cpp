@@ -1,5 +1,5 @@
 
-#include "line_me.h"
+#include "fluid_sim.h"
 
 #include <Gl/gl.h>
 
@@ -10,10 +10,10 @@
 #include "sim_constants.h"
 #include "collision_resolver.h"
 
-line_me_t::line_me_t()
+fluid_sim_t::fluid_sim_t()
 {}
 
-bool line_me_t::init()
+bool fluid_sim_t::init()
 {
 	win_width_ = window_t::width();
 	win_height_ = window_t::height();
@@ -77,7 +77,7 @@ bool line_me_t::init()
 	force_coeff_ = 0;
 }
 
-void line_me_t::resize(int w, int h)
+void fluid_sim_t::resize(int w, int h)
 {
 	glViewport(0, 0, w, h);
 
@@ -90,7 +90,7 @@ void line_me_t::resize(int w, int h)
 	glLoadIdentity();
 }
 
-void line_me_t::reset()
+void fluid_sim_t::reset()
 {
 	particles_.clear();
 
@@ -98,7 +98,7 @@ void line_me_t::reset()
 	emitter_.set_active(true);
 }
 
-void line_me_t::render()
+void fluid_sim_t::render()
 {
 	mouse_pos_.x = window_t::mouse_x() * win_scale_x_;
 	mouse_pos_.y = window_t::mouse_y() * win_scale_y_;
@@ -330,7 +330,7 @@ void line_me_t::render()
 	use_color("white");
 }
 
-void line_me_t::idle()
+void fluid_sim_t::idle()
 {
 	index_grid_.adjust(particles_);
 
@@ -365,7 +365,7 @@ void line_me_t::idle()
 	}
 }
 
-void line_me_t::key_up(int key)
+void fluid_sim_t::key_up(int key)
 {
 	LOG("key_up") << key;
 
@@ -406,7 +406,7 @@ void line_me_t::key_up(int key)
 	}
 }
 
-void line_me_t::key_down(int key)
+void fluid_sim_t::key_down(int key)
 {
 	LOG("key_down") << key;
 
@@ -435,12 +435,12 @@ void line_me_t::key_down(int key)
 	}
 }
 
-void line_me_t::mouse_move(int x, int y)
+void fluid_sim_t::mouse_move(int x, int y)
 {
 	LOG("mouse_move") << x << " " << y;
 }
 
-void line_me_t::mouse_up(int x, int y, int btn)
+void fluid_sim_t::mouse_up(int x, int y, int btn)
 {
 	LOG("mouse_up") << x << " " << y << " " << btn;
 
@@ -477,7 +477,7 @@ void line_me_t::mouse_up(int x, int y, int btn)
 	elastic_obb_.set_extent(glm::vec2(0.0f, 0.0f));
 }
 
-void line_me_t::mouse_down(int x, int y, int btn)
+void fluid_sim_t::mouse_down(int x, int y, int btn)
 {
 	LOG("mouse_down") << x << " " << y << " " << btn;
 
@@ -516,7 +516,7 @@ void line_me_t::mouse_down(int x, int y, int btn)
 	}
 }
 
-void line_me_t::mouse_drag(int x, int y, int btn)
+void fluid_sim_t::mouse_drag(int x, int y, int btn)
 {
 	LOG("mouse_drag") << x << " " << y << " " << btn;
 
@@ -580,7 +580,7 @@ void line_me_t::mouse_drag(int x, int y, int btn)
 	}
 }
 
-void line_me_t::mouse_wheel(int x, int y, int dir)
+void fluid_sim_t::mouse_wheel(int x, int y, int dir)
 {
 	LOG("mouse_dir") << x << " " << y << " " << dir;
 
