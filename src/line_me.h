@@ -26,6 +26,15 @@ public:
 	void render();
 	void idle();
 
+	void key_up(int key);
+	void key_down(int key);
+
+	void mouse_move(int x, int y);
+	void mouse_up(int x, int y, int btn);
+	void mouse_down(int x, int y, int btn);
+	void mouse_drag(int x, int y, int btn);
+	void mouse_wheel(int x, int y, int dir);
+
 private:
 	int win_width_, win_height_;
 	float win_scale_x_, win_scale_y_;

@@ -3,6 +3,7 @@
 
 #include <Gl/gl.h>
 
+#include "log.h"
 #include "window.h"
 
 #include "draw.h"
@@ -43,7 +44,7 @@ bool line_me_t::init()
 
 	glm::vec2 position, direction, extent;
 
-	position.x = main_area_y0_;
+	position.x = main_area_x0_;
 	position.y = main_area_y1_;
 
 	direction.x = 0.8f;
@@ -55,6 +56,8 @@ bool line_me_t::init()
 	emitter_.set_mass_interval(particle_mass, particle_mass);
 	emitter_.set_velocity_interval(particle_mass * 0.45f, particle_mass * 0.5f);
 
+	poly6_.set_h(cell_space);
+	spiky_.set_h(cell_space);
 	viscosity_.set_h(cell_space);
 
 	ready_ = false;
@@ -97,6 +100,9 @@ void line_me_t::reset()
 
 void line_me_t::render()
 {
+	mouse_pos_.x = window_t::mouse_x() * win_scale_x_;
+	mouse_pos_.y = window_t::mouse_y() * win_scale_y_;
+
 	std::vector<fluid_particle_t*> ret;
 	ret = emitter_.emite(delta_time_sec);
 	particles_.insert(particles_.end(), ret.begin(), ret.end());
@@ -106,7 +112,7 @@ void line_me_t::render()
 	fluid_particle_t* particle, * neighbor_particle;
 
 	float density, pressure, dist;
-	glm::vec2 p, prev_p, v, f, next_f;
+	glm::vec2 p, v, f, next_f;
 
 	for(size_t i = 0; i < particles_.size(); ++i)
 	{
@@ -179,10 +185,10 @@ void line_me_t::render()
 	use_color("blue");
 
 	p = emitter_.get_position();
-	draw_circle(p.x, p.y, 0.0f, 0.05f);
+	draw_circle(p.x, p.y, 0.0f, 8.0f);
 
 	use_color("red");
-	draw_circle(mouse_pos_.x, mouse_pos_.y, 0.0f, 0.05f);
+	draw_circle(mouse_pos_.x, mouse_pos_.y, 0.0f, 8.0f);
 
 	glm::vec2 ex[2];
 
@@ -232,6 +238,14 @@ void line_me_t::render()
 	}
 
 	glEnd();
+
+	if(window_t::is_key_down(114))
+	{
+		glBegin(GL_LINES);
+			glVertex2fv(end_point_[0].data.data);
+			glVertex2fv(mouse_pos_.data.data);
+		glEnd();
+	}
 
 	ex[0] = elastic_obb_.get_extent();
 
@@ -348,5 +362,232 @@ void line_me_t::idle()
 	for(size_t i = 0; i < edge_obb_.size(); ++i)
 	{
 		collision_solve(edge_obb_[i], particles_, 0.2f, 0.0f);
+	}
+}
+
+void line_me_t::key_up(int key)
+{
+	LOG("key_up") << key;
+
+	if(114 == key)
+	{
+		mouse_pos_.x = window_t::mouse_x() * win_scale_x_;
+		mouse_pos_.y = window_t::mouse_y() * win_scale_y_;
+
+		end_point_[1] == mouse_pos_;
+
+		glm::vec2 diff = end_point_[0] - end_point_[1];
+
+		if(diff.length() < cell_space * 0.4)
+		{
+			return;
+		}
+
+		glm::vec2 position, direction, extent;
+
+		position = 0.5f * (end_point_[0] + end_point_[1]);
+
+		direction = end_point_[1] - end_point_[0];
+
+		extent[0] = 0.5f * direction.length();
+		extent[1] = 8.0f;
+
+		obb_t obb;
+
+		obb.set_margin(cell_space * 0.25f);
+
+		obb.set_position(position);
+		obb.set_axis(direction);
+		obb.set_extent(extent);
+
+		draw_obb_.push_back(obb);
+
+		end_point_[0] = end_point_[1];
+	}
+}
+
+void line_me_t::key_down(int key)
+{
+	LOG("key_down") << key;
+
+	if('r' == key)
+	{
+		reset();
+	}
+	else if('p' == key)
+	{
+		emitter_.set_active(!emitter_.is_active());
+	}
+	else if('l' == key)
+	{
+		leak_ = !leak_;
+	}
+	else if('e' == key)
+	{
+		show_edge_ = !show_edge_;
+	}
+	else if(114 == key)
+	{
+		mouse_pos_.x = window_t::mouse_x() * win_scale_x_;
+		mouse_pos_.y = window_t::mouse_y() * win_scale_y_;
+
+		end_point_[0] = mouse_pos_;
+	}
+}
+
+void line_me_t::mouse_move(int x, int y)
+{
+	LOG("mouse_move") << x << " " << y;
+}
+
+void line_me_t::mouse_up(int x, int y, int btn)
+{
+	LOG("mouse_up") << x << " " << y << " " << btn;
+
+	glm::vec2 p(x * win_scale_x_, y * win_scale_y_);
+
+	glm::vec2 ex;
+	ex = elastic_obb_.get_extent();
+
+	glm::vec2 normal, new_center;
+	float length;
+
+	new_center.x = new_center.y = 0.0f;
+
+	int n = 0;
+
+	for(size_t i = 0; i < edge_obb_.size(); ++i)
+	{
+		if(bounding_volume_t::intersects(elastic_obb_, edge_obb_[i], normal, length))
+		{
+			selected_obb_.insert((int)i);
+
+			new_center += edge_obb_[i].get_position();
+			++n;
+		}
+	}
+
+	if(n > 0)
+	{
+		new_center /= n;
+        center_ = new_center;
+	}
+
+	elastic_start_ = p;
+	elastic_obb_.set_extent(glm::vec2(0.0f, 0.0f));
+}
+
+void line_me_t::mouse_down(int x, int y, int btn)
+{
+	LOG("mouse_down") << x << " " << y << " " << btn;
+
+	glm::vec2 p(x * win_scale_x_, y * win_scale_y_);
+
+	if(window_t::is_key_down(114))
+	{
+		end_point_[0] = p;
+		ready_ = true;
+
+        elastic_start_ = p;
+		elastic_obb_.set_extent(glm::vec2(0.0f, 0.0f));
+
+		selected_obb_.clear();
+		obb_locked_ = false;
+	}
+	else
+	{
+		glm::vec2 diff = p - center_;
+
+		if(diff.length() < cell_space * 0.25f)
+		{
+            obb_locked_ = true;
+			offset_ = center_ - p;
+		}
+		else
+		{
+			ready_ = false;
+
+			elastic_start_ = p;
+			elastic_obb_.set_extent(glm::vec2(0.0f, 0.0f));
+
+			selected_obb_.clear();
+			obb_locked_ = false;
+		}
+	}
+}
+
+void line_me_t::mouse_drag(int x, int y, int btn)
+{
+	LOG("mouse_drag") << x << " " << y << " " << btn;
+
+	glm::vec2 p(x * win_scale_x_, y * win_scale_y_);
+
+	if(window_t::is_key_down(114))
+	{
+		end_point_[1] = p;
+
+        glm::vec2 diff = end_point_[0] - end_point_[1];
+
+		if(diff.length() < cell_space * 0.4f)
+		{
+			return;
+		}
+
+		glm::vec2 position, direction, extent;
+
+		position = 0.5f * (end_point_[0] + end_point_[1]);
+
+		direction = end_point_[1] - end_point_[0];
+
+		extent[0] = 0.5f * direction.length();
+		extent[1] = 8.0f;
+
+		obb_t obb;
+
+		obb.set_margin(cell_space * 0.25f);
+
+		obb.set_position(position);
+		obb.set_axis(direction);
+		obb.set_extent(extent);
+
+		draw_obb_.push_back(obb);
+
+		end_point_[0] = end_point_[1];
+	}
+	else
+	{
+		if(!obb_locked_)
+		{
+			elastic_obb_.set_position(0.5f * (elastic_start_ + p));
+
+			glm::vec2 extent;
+			extent = 0.5f * (p - elastic_start_);
+
+			elastic_obb_.set_extent(extent);
+		}
+		else
+		{
+			glm::vec2 new_center;
+            new_center = p + offset_;
+
+			for(const auto& it : selected_obb_)
+			{
+				edge_obb_[it].set_position(edge_obb_[it].get_position() - center_ + new_center);
+			}
+
+            center_ = new_center;
+		}
+	}
+}
+
+void line_me_t::mouse_wheel(int x, int y, int dir)
+{
+	LOG("mouse_dir") << x << " " << y << " " << dir;
+
+	glm::vec2 p(x * win_scale_x_, y * win_scale_y_);
+
+	for(const auto& it : selected_obb_)
+	{
+        edge_obb_[it].rotate(center_, ((dir > 0)? -1 : (dir < 0)? 1 : 0) * rot_speed_);
 	}
 }
