@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 		sig_key_up.connect(
 			[&](int key)
 			{
-				// game.key_up(key);
+				game.key_up(key);
 			}
 		);
 
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					// game.key_down(key);
+					game.key_down(key);
 				}
 			}
 		);
@@ -123,35 +123,35 @@ int main(int argc, char** argv)
 		sig_mouse_move.connect(
 			[&](int x, int y)
 			{
-				// game.mouse_move(x, y);
+				game.mouse_move(x, y);
 			}
 		);
 
 		sig_mouse_up.connect(
 			[&](int x, int y, int btn)
 			{
-				// game.mouse_up(x, y, btn);
+				game.mouse_up(x, y, btn);
 			}
 		);
 
 		sig_mouse_down.connect(
 			[&](int x, int y, int btn)
 			{
-				// game.mouse_down(x, y, btn);
+				game.mouse_down(x, y, btn);
 			}
 		);
 
 		sig_mouse_drag.connect(
 			[&](int x, int y, int btn)
 			{
-				// game.mouse_drag(x, y, btn);
+				game.mouse_drag(x, y, btn);
 			}
 		);
 
 		sig_mouse_wheel.connect(
 			[&](int x, int y, int dir)
 			{
-				// game.mouse_wheel(x, y, dir);
+				game.mouse_wheel(x, y, dir);
 			}
 		);
 

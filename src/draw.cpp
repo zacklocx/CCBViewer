@@ -150,6 +150,7 @@ static const char* color_lib[][2] =
 	{ "yellowgreen", "#9ACD32" }
 };
 
+static const int color_lib_size = sizeof(color_lib) / sizeof(color_lib[0]);
 static const int default_color_index = 125;
 
 static void hex_to_rgb(const char* hex, unsigned char* rgb)
@@ -180,6 +181,16 @@ static void hex_to_rgb(const char* hex, unsigned char* rgb)
 			rgb[i >> 1] = (tmp[i - 1] << 4) + tmp[i];
 		}
 	}
+}
+
+void use_color(int color_index)
+{
+	if(!(color_index >= 0 && color_index <= color_lib_size - 1))
+	{
+		color_index = default_color_index;
+	}
+
+	use_color(color_lib[color_index][1]);
 }
 
 void use_color(const char* color_str)
@@ -233,12 +244,12 @@ static const GLenum blend_factor[] =
 	GL_ONE_MINUS_DST_COLOR
 };
 
-static const int blend_factor_num = sizeof(blend_factor) / sizeof(blend_factor[0]);
+static const int blend_factor_size = sizeof(blend_factor) / sizeof(blend_factor[0]);
 
 void blend_mode(int src_index, int dst_index)
 {
-	if(src_index >= 0 && src_index <= blend_factor_num - 1 &&
-		dst_index >= 0 && dst_index <= blend_factor_num - 1)
+	if(src_index >= 0 && src_index <= blend_factor_size - 1 &&
+		dst_index >= 0 && dst_index <= blend_factor_size - 1)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(blend_factor[src_index], blend_factor[dst_index]);
@@ -249,8 +260,10 @@ void blend_mode(int src_index, int dst_index)
 	}
 }
 
-void draw_line(float x1, float y1, float x2, float y2)
+void draw_line(float x1, float y1, float x2, float y2, float width)
 {
+	glLineWidth(width);
+
 	glBegin(GL_LINES);
 		glVertex2f(x1, y1);
 		glVertex2f(x2, y2);
