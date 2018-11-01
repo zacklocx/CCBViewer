@@ -29,7 +29,7 @@ else()
 	find_library(FREEGLUT_LIBRARY NAMES glut libglut
 	             HINTS /usr/lib64)
 endif()
- 
+
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set FREEGLUT_FOUND to TRUE
 # if all listed variables are TRUE
