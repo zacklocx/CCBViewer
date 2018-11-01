@@ -14,7 +14,7 @@ box2d_test_t::box2d_test_t()
 	, world_(b2Vec2(0.0f, -10.0f))
 	, current_selected_(-1)
 	, min_remove_num_(3), max_obj_num_(40)
-	, max_gap_(15.0f), extra_dist_(15.0f)
+	, max_gap_(20.0f), extra_dist_(15.0f)
 	, bomb_1_radius_(120.0f), bomb_2_size_(60.0f)
 {}
 
@@ -54,7 +54,7 @@ void box2d_test_t::init()
 	centerBox.SetAsBox(win_width * 0.25f, 10.0f);
 	centerBody->CreateFixture(&centerBox, 0.0f);
 
-	generate(max_obj_num_);
+	generate(max_obj_num_, false);
 }
 
 void box2d_test_t::reset()
@@ -68,8 +68,10 @@ void box2d_test_t::reset()
 	explode_preview_list_.clear();
 	explode_list_.clear();
 	bomb_list_.clear();
+	auto_remove_list_.clear();
+	auto_connect_list_.clear();
 
-	generate(max_obj_num_);
+	generate(max_obj_num_, false);
 }
 
 void box2d_test_t::render()
@@ -244,12 +246,16 @@ void box2d_test_t::update()
 		remove(explode_list_, false);
 		explode_list_.clear();
 
-		int need_gen_num = max_obj_num_ - bodies_.size();
+		
+	}
 
-		if(need_gen_num > 0)
-		{
-			generate(need_gen_num);
-		}
+	auto_connect();
+
+	int need_gen_num = max_obj_num_ - bodies_.size();
+
+	if(need_gen_num > 0)
+	{
+		generate(need_gen_num, false);
 	}
 }
 
@@ -348,7 +354,7 @@ void box2d_test_t::mouse_up(int x, int y, int btn)
 
 	if(need_gen_num > 0)
 	{
-		generate(need_gen_num);
+		generate(need_gen_num, true);
 	}
 }
 
@@ -523,7 +529,7 @@ bool box2d_test_t::is_touched(b2Body* body, const b2Vec2& pos)
 	return b2DistanceSquared(pos, body_pos) <= radius * radius;
 }
 
-void box2d_test_t::generate(int num)
+void box2d_test_t::generate(int num, bool auto_remove)
 {
 	int win_width = window_t::width();
 	int win_height = window_t::height();
@@ -539,7 +545,7 @@ void box2d_test_t::generate(int num)
 		b2Body* body = world_.CreateBody(&bodyDef);
 
 		b2CircleShape dynamicCircle;
-		dynamicCircle.m_radius = rand_real(20.0, 40.0);
+		dynamicCircle.m_radius = rand_real(30.0, 30.0);
 
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &dynamicCircle;
@@ -560,7 +566,12 @@ void box2d_test_t::generate(int num)
 
 		bodies_.push_back(body);
 
-		colors_[body] = rand_int(10, 15);
+		colors_[body] = rand_int(10, 13);
+
+		if(auto_remove)
+		{
+			auto_remove_list_.insert(body);
+		}
 	}
 }
 
@@ -586,6 +597,56 @@ void box2d_test_t::connect(b2Body* body)
 				open_list.push(body);
 				connected_list_.insert(body);
 			}
+		}
+	}
+}
+
+void box2d_test_t::auto_connect()
+{
+	for(std::unordered_set<b2Body*>::const_iterator it = auto_remove_list_.begin();
+		it != auto_remove_list_.end();)
+	{
+		auto auto_body = *it;
+
+		b2Vec2 velocity = auto_body->GetLinearVelocity();
+
+		if(velocity.Length() > 1.0f)
+		{
+			++it;
+			continue;
+		}
+
+		std::queue<b2Body*> open_list;
+
+		open_list.push(auto_body);
+
+		while(!open_list.empty())
+		{
+			auto target_body = open_list.front();
+			open_list.pop();
+
+			for(const auto& body : bodies_)
+			{
+				if(0 == bomb_list_.count(body))
+				{
+					if(body != target_body &&
+						0 == auto_connect_list_[auto_body].count(body) &&
+						is_connected(body, target_body))
+					{
+						open_list.push(body);
+						auto_connect_list_[auto_body].insert(body);
+					}
+				}
+			}
+		}
+
+		auto_remove();
+
+		it = auto_remove_list_.erase(it);
+
+		if(0 == auto_remove_list_.size())
+		{
+			auto_explode();
 		}
 	}
 }
@@ -660,6 +721,58 @@ void box2d_test_t::rand_force()
 
 		b2Vec2 impulse(rand_real(-80.0f, 80.0f), rand_real(20.0f, 50.0f));
 		body->ApplyLinearImpulse(impulse, body->GetWorldCenter(), true);
+	}
+}
+
+void box2d_test_t::auto_remove()
+{
+	int min_connected = bomb_level_.begin()->second;
+	int max_connected = bomb_level_.rbegin()->second;
+
+	for(std::unordered_map<b2Body*, std::unordered_set<b2Body*>>::const_iterator it = auto_connect_list_.begin();
+		it != auto_connect_list_.end();)
+	{
+		auto auto_body = it->first;
+		auto auto_list = it->second;
+
+		b2Vec2 velocity = auto_body->GetLinearVelocity();
+
+		if(velocity.Length() > 1.0f)
+		{
+			++it;
+			continue;
+		}
+
+		int all_connected = auto_list.size();
+
+		if(all_connected >= min_remove_num_)
+		{
+			if(all_connected >= min_connected)
+			{
+				if(all_connected > max_connected)
+				{
+					all_connected = max_connected;
+				}
+
+				int bomb_level = bomb_level_.begin()->first;
+
+				for(const auto& [level, connected] : bomb_level_)
+				{
+					if(all_connected <= connected)
+					{
+						bomb_level = level;
+						break;
+					}
+				}
+
+				auto_list.erase(auto_body);
+				bomb_list_.insert({ auto_body, bomb_level });
+			}
+
+			remove(auto_list, false);
+		}
+
+		it = auto_connect_list_.erase(it);
 	}
 }
 
@@ -775,6 +888,16 @@ void box2d_test_t::explode_preview(b2Body* bomb)
 			}
 		}
 	}
+}
+
+void box2d_test_t::auto_explode()
+{
+	for(const auto& [body, level] : bomb_list_)
+	{
+		explode(body);
+	}
+
+	bomb_list_.clear();
 }
 
 void box2d_test_t::remove(const std::vector<int>& remove_list, bool enable_explode)

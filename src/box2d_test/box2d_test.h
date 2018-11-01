@@ -43,6 +43,9 @@ private:
 	std::vector<int> selected_stack_;
 	std::unordered_set<int> all_selected_;
 
+	std::unordered_set<b2Body*> auto_remove_list_;
+	std::unordered_map<b2Body*, std::unordered_set<b2Body*>> auto_connect_list_;
+
 	std::unordered_set<b2Body*> connected_list_;
 	std::unordered_set<b2Body*> explode_preview_list_;
 	std::unordered_set<b2Body*> explode_list_;
@@ -60,14 +63,18 @@ private:
 	bool is_touched(b2Body* body, const b2Vec2& pos);
 	bool is_rough_touched(b2Body* body, const b2Vec2& pos);
 
-	void generate(int num);
+	void generate(int num, bool auto_remove);
 	void connect(b2Body* body);
+	void auto_connect();
 	int find_base_color();
 	int get_connected_num();
 
 	void rand_force();
+	void auto_remove();
+
 	void explode(b2Body* bomb);
 	void explode_preview(b2Body* bomb);
+	void auto_explode();
 
 	void remove(const std::vector<int>& remove_list, bool enable_explode);
 	void remove(const std::vector<b2Body*> remove_list, bool enable_explode);
