@@ -425,6 +425,11 @@ void box2d_test_t::mouse_drag(int x, int y, int btn)
 				break;
 			}
 
+			if(all_selected_.count(index) > 0)
+			{
+				break;
+			}
+
 			if(is_connected(target_body, body))
 			{
 				bool need_refresh = find_base_color() < 0;
