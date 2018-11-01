@@ -5,15 +5,19 @@
 #  SQLITE3_LIBRARIES - The libraries needed to use sqlite3
 #  SQLITE3_DEFINITIONS - Compiler switches required for using sqlite3
 
-find_package(PkgConfig)
-pkg_check_modules(PC_SQLITE3 QUIET sqlite3)
-set(SQLITE3_DEFINITIONS ${PC_SQLITE3_CFLAGS_OTHER})
-
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h
-          HINTS ${PC_SQLITE3_INCLUDEDIR} ${PC_SQLITE3_INCLUDE_DIRS})
+          HINTS /usr/local/opt/sqlite/include)
+
+set(FIND_LIBRARY_SUFFIXES_BACKUP ${CMAKE_FIND_LIBRARY_SUFFIXES})
+
+if(SQLITE3_USE_STATIC_LIBS)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif()
 
 find_library(SQLITE3_LIBRARY NAMES sqlite3 libsqlite3
-             HINTS ${PC_SQLITE3_LIBDIR} ${PC_SQLITE3_LIBRARY_DIRS})
+             HINTS /usr/local/opt/sqlite/lib)
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${FIND_LIBRARY_SUFFIXES_BACKUP})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set SQLITE3_FOUND to TRUE
