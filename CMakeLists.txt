@@ -14,13 +14,13 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
-message(FATAL_ERROR "do not run cmake inside source directory
-Remove the CMakeCache.txt file and try again from another folder, e.g.:
+ message(FATAL_ERROR
+ " Do NOT run cmake inside source directory
+ Remove the CMakeCache.txt file and try again from another folder, e.g.:
    rm CMakeCache.txt
    mkdir build
    cd build
-   cmake ..
-")
+   cmake ..")
 endif()
 
 add_subdirectory(src)
