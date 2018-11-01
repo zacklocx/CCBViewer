@@ -5,6 +5,11 @@ add_definitions(-DAVHTTP_ENABLE_ZLIB)
 add_definitions(-DAVHTTP_ENABLE_OPENSSL)
 add_definitions(-DAVHTTP_DISABLE_THREAD)
 
+# set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
+set(Boost_USE_STATIC_LIBS TRUE)
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+
 find_package(zlib REQUIRED)
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 find_package(openssl REQUIRED)

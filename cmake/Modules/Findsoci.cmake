@@ -9,6 +9,9 @@ find_package(PkgConfig QUIET)
 pkg_check_modules(PC_SOCI QUIET soci)
 set(SOCI_DEFINITIONS ${PC_SOCI_CFLAGS_OTHER})
 
+set(FIND_LIBRARY_SUFFIXES_BACKUP ${CMAKE_FIND_LIBRARY_SUFFIXES})
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
 find_path(SOCI_INCLUDE_DIR soci.h
           HINTS ${PC_SOCI_INCLUDEDIR} ${PC_SOCI_INCLUDE_DIRS}
           PATH_SUFFIXES "soci")
@@ -18,6 +21,8 @@ find_library(SOCI_LIBRARY NAMES soci_core libsoci_core
 
 find_library(SOCI_SQLITE3_LIBRARY NAMES soci_sqlite3 libsoci_sqlite3
              HINTS ${PC_SOCI_LIBDIR} ${PC_SOCI_LIBRARY_DIRS})
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${FIND_LIBRARY_SUFFIXES_BACKUP})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set SOCI_FOUND to TRUE
