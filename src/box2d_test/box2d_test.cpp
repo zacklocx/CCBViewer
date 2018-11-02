@@ -5,9 +5,28 @@
 
 #include <GL/gl.h>
 
+#include <spine/spine.h>
+
 #include "util.h"
 #include "draw.h"
 #include "window.h"
+
+spine::SpineExtension* spine::getDefaultExtension()
+{
+	return new DefaultSpineExtension();
+}
+
+class MyTextureLoader : public spine::TextureLoader
+{
+	virtual void load(spine::AtlasPage& page, const spine::String& path)
+	{
+		void* texture = nullptr;
+		page.setRendererObject(texture);
+	}
+
+	virtual void unload(void* texture)
+	{}
+};
 
 box2d_test_t::box2d_test_t()
 	: mouse_pressed_(false)
