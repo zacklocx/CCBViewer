@@ -30,13 +30,13 @@ include_directories(${Boost_INCLUDE_DIR})
 include_directories($ENV{OPENSSL_ROOT_DIR}/include)
 link_directories($ENV{OPENSSL_ROOT_DIR}/lib)
 
-include_directories(${JSONCPP_INCLUDE_DIRS})
 include_directories(${SOCI_INCLUDE_DIRS})
 include_directories(${FREEGLUT_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/third_party/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/Box2D)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
+include_directories(${CMAKE_SOURCE_DIR}/third_party/spine-runtimes/spine-cpp/spine-cpp/include)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
@@ -52,13 +52,14 @@ set(EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 file(GLOB MAIN_CPP ${CMAKE_SOURCE_DIR}/src/*.cpp)
 file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/imgui/*.cpp)
 file(GLOB_RECURSE BOX2D_CPP ${CMAKE_SOURCE_DIR}/third_party/Box2D/Box2D/*.cpp)
+file(GLOB_RECURSE SPINE_CPP ${CMAKE_SOURCE_DIR}/third_party/spine-runtimes/spine-cpp/spine-cpp/*.cpp)
 
 file(GLOB_RECURSE FLUID_SIM_CPP ${CMAKE_SOURCE_DIR}/src/fluid_sim/*.cpp)
 file(GLOB_RECURSE BOX2D_TEST_CPP ${CMAKE_SOURCE_DIR}/src/box2d_test/*.cpp)
 
-set(ALL_CPP ${ALL_CPP} ${MAIN_CPP} ${IMGUI_CPP} ${BOX2D_CPP})
-# set(ALL_CPP ${ALL_CPP} ${FLUID_SIM_CPP})
-set(ALL_CPP ${ALL_CPP} ${BOX2D_TEST_CPP})
+set(COMMON_CPP ${MAIN_CPP} ${IMGUI_CPP})
+# set(ALL_CPP ${COMMON_CPP} ${FLUID_SIM_CPP})
+set(ALL_CPP ${COMMON_CPP} ${BOX2D_TEST_CPP} ${BOX2D_CPP} ${SPINE_CPP})
 
 add_executable(${PROJECT_NAME} ${ALL_CPP})
 target_link_libraries(${PROJECT_NAME} ${EXTRA_LIBS})
