@@ -33,15 +33,22 @@ void box2d_test_t::init()
 	bottomBox.SetAsBox(win_width * 0.5f, 10.0f);
 	bottomBody->CreateFixture(&bottomBox, 0.0f);
 
+	b2BodyDef topBodyDef;
+	topBodyDef.position.Set(win_width * 0.5,  win_height * 2.0);
+	b2Body* topBody = world_.CreateBody(&topBodyDef);
+	b2PolygonShape topBox;
+	topBox.SetAsBox(win_width * 0.5f, 10.0f);
+	topBody->CreateFixture(&topBox, 0.0f);
+
 	b2BodyDef leftBodyDef;
-	leftBodyDef.position.Set(0.0f, 0.0f);
+	leftBodyDef.position.Set(0.0f, win_height);
 	b2Body* leftBody = world_.CreateBody(&leftBodyDef);
 	b2PolygonShape leftBox;
 	leftBox.SetAsBox(10.0f, win_height);
 	leftBody->CreateFixture(&leftBox, 0.0f);
 
 	b2BodyDef rightBodyDef;
-	rightBodyDef.position.Set(win_width, 0.0f);
+	rightBodyDef.position.Set(win_width, win_height);
 	b2Body* rightBody = world_.CreateBody(&rightBodyDef);
 	b2PolygonShape rightBox;
 	rightBox.SetAsBox(10.0f, win_height);
@@ -545,7 +552,7 @@ void box2d_test_t::generate(int num, bool auto_remove)
 	for(int i = 0; i < num; ++i)
 	{
 		bodyDef.position.Set(rand_real(win_width * 0.1, win_width * 0.9),
-			rand_real(win_height * 1.0, win_height * 2.0));
+			rand_real(win_height * 1.0, win_height * 1.8));
 
 		b2Body* body = world_.CreateBody(&bodyDef);
 
