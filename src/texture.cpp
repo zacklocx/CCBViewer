@@ -140,6 +140,13 @@ int texture_t::height() const
 
 void texture_t::draw(float x, float y, float w, float h, float r) const
 {
+	draw(x, y, w, h, 0.5f, 0.5f, 1.0f, 1.0f, r);
+}
+
+void texture_t::draw(float x, float y, float w, float h,
+		float tx, float ty, float tw, float th,
+		float r) const
+{
 	unsigned int id = info_? info_->id_ : 0u;
 
 	float vx = w * 0.5f, vy = h * 0.5f;
@@ -152,16 +159,16 @@ void texture_t::draw(float x, float y, float w, float h, float r) const
 	glBindTexture(GL_TEXTURE_2D, id);
 
 	glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f);
+		glTexCoord2f(tx - tw * 0.5f, ty - th * 0.5f);
 		glVertex2f(-vx, -vy);
 
-		glTexCoord2f(1.0f, 0.0f);
+		glTexCoord2f(tx + tw * 0.5f, ty - th * 0.5f);
 		glVertex2f(vx, -vy);
 
-		glTexCoord2f(1.0f, 1.0f);
+		glTexCoord2f(tx + tw * 0.5f, ty + th * 0.5f);
 		glVertex2f(vx, vy);
 
-		glTexCoord2f(0.0f, 1.0f);
+		glTexCoord2f(tx - tw * 0.5f, ty + th * 0.5f);
 		glVertex2f(-vx, vy);
 	glEnd();
 

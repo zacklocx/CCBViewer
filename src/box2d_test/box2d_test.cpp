@@ -7,6 +7,7 @@
 
 #include <spine/spine.h>
 
+#include "log.h"
 #include "util.h"
 #include "draw.h"
 #include "window.h"
@@ -28,17 +29,38 @@ class MyTextureLoader : public spine::TextureLoader
 	{}
 };
 
-box2d_test_t::box2d_test_t()
-	: mouse_pressed_(false)
+box2d_test_t::box2d_test_t(const std::string& base_path)
+	: base_path_(base_path)
+	, mouse_pressed_(false)
+	, x_offset_(30), y_offset_1_(92), y_offset_2_(585)
 	, world_(b2Vec2(0.0f, -10.0f))
 	, current_selected_(-1)
 	, min_remove_num_(3), max_obj_num_(40)
 	, max_gap_(20.0f), extra_dist_(15.0f)
-	, bomb_1_radius_(120.0f), bomb_2_size_(60.0f)
-{}
+	, bomb_1_radius_(80.0f), bomb_2_size_(20.0f)
+{
+	img_list_.push_back(base_path_ + "/line_me/pot.png");
+	img_list_.push_back(base_path_ + "/line_me/food_greens.png");
+	img_list_.push_back(base_path_ + "/line_me/food_mutton.png");
+	img_list_.push_back(base_path_ + "/line_me/food_meatballs.png");
+	img_list_.push_back(base_path_ + "/line_me/food_mushroom.png");
+}
+
+box2d_test_t::~box2d_test_t()
+{
+	for(const auto& it : img_list_)
+	{
+		unload_image(it.c_str());
+	}
+}
 
 void box2d_test_t::init()
 {
+	for(const auto& it : img_list_)
+	{
+		load_image(it.c_str());
+	}
+
 	bomb_level_[1] = 4;
 	bomb_level_[2] = 5;
 
@@ -46,7 +68,7 @@ void box2d_test_t::init()
 	int win_height = window_t::height();
 
 	b2BodyDef bottomBodyDef;
-	bottomBodyDef.position.Set(win_width * 0.5, 0.0f);
+	bottomBodyDef.position.Set(win_width * 0.5, y_offset_1_);
 	b2Body* bottomBody = world_.CreateBody(&bottomBodyDef);
 	b2PolygonShape bottomBox;
 	bottomBox.SetAsBox(win_width * 0.5f, 10.0f);
@@ -59,26 +81,58 @@ void box2d_test_t::init()
 	topBox.SetAsBox(win_width * 0.5f, 10.0f);
 	topBody->CreateFixture(&topBox, 0.0f);
 
+	// b2BodyDef topBody2Def;
+	// topBody2Def.position.Set(win_width * 0.5,  y_offset_2_);
+	// b2Body* topBody2 = world_.CreateBody(&topBody2Def);
+	// b2PolygonShape topBox2;
+	// topBox2.SetAsBox(win_width * 0.5f, 10.0f);
+	// topBody2->CreateFixture(&topBox2, 0.0f);
+
 	b2BodyDef leftBodyDef;
-	leftBodyDef.position.Set(0.0f, win_height);
+	leftBodyDef.position.Set(x_offset_, win_height);
 	b2Body* leftBody = world_.CreateBody(&leftBodyDef);
 	b2PolygonShape leftBox;
 	leftBox.SetAsBox(10.0f, win_height);
 	leftBody->CreateFixture(&leftBox, 0.0f);
 
 	b2BodyDef rightBodyDef;
-	rightBodyDef.position.Set(win_width, win_height);
+	rightBodyDef.position.Set(win_width - x_offset_, win_height);
 	b2Body* rightBody = world_.CreateBody(&rightBodyDef);
 	b2PolygonShape rightBox;
 	rightBox.SetAsBox(10.0f, win_height);
 	rightBody->CreateFixture(&rightBox, 0.0f);
 
-	b2BodyDef centerBodyDef;
-	centerBodyDef.position.Set(win_width * 0.5f, win_height * 0.25f);
-	b2Body* centerBody = world_.CreateBody(&centerBodyDef);
-	b2PolygonShape centerBox;
-	centerBox.SetAsBox(win_width * 0.25f, 10.0f);
-	centerBody->CreateFixture(&centerBox, 0.0f);
+	////////////////////////////////////////////////////////////////////////////////
+
+	point_list_t point_list;
+
+	float x = (x_offset_ + win_width * 0.5f) * 0.3f;
+	float y = (y_offset_1_ + y_offset_2_) * 0.5f;
+	float y2 = 150;
+
+	point_list.clear();
+	add_poly_point(point_list, { x_offset_, y });
+	add_poly_point(point_list, { x, y2 });
+	add_poly_point(point_list, { x_offset_, y2 });
+	create_poly_border(point_list);
+
+	point_list.clear();
+	add_poly_point(point_list, { x, y2 });
+	add_poly_point(point_list, { win_width * 0.5f, y_offset_1_ });
+	add_poly_point(point_list, { x, y_offset_1_ });
+	create_poly_border(point_list);
+
+	point_list.clear();
+	add_poly_point(point_list, { win_width - x_offset_, y });
+	add_poly_point(point_list, { win_width - x, y2 });
+	add_poly_point(point_list, { win_width - x_offset_, y2 });
+	create_poly_border(point_list);
+
+	point_list.clear();
+	add_poly_point(point_list, { win_width - x, y2 });
+	add_poly_point(point_list, { win_width * 0.5f, y_offset_1_ });
+	add_poly_point(point_list, { win_width - x, y_offset_1_ });
+	create_poly_border(point_list);
 
 	generate(max_obj_num_, false);
 }
@@ -105,12 +159,14 @@ void box2d_test_t::render()
 	int win_width = window_t::width();
 	int win_height = window_t::height();
 
-	use_color("black");
-	draw_rect(win_width * 0.5f, 0.0f, win_width, 20.0f, true);
-	draw_rect(0.0f, win_height, 20.0f, win_height * 2.0f, true);
-	draw_rect(win_width, win_height, 20.0f, win_height * 2.0f, true);
-	draw_rect(win_width * 0.5f, win_height * 0.25f, win_width * 0.5f, 20.0f, true);
-	use_color("white");
+	// use_color("black");
+	// draw_rect(win_width * 0.5f, 0.0f, win_width, 20.0f, true);
+	// draw_rect(x_offset_, win_height, 20.0f, win_height * 2.0f, true);
+	// draw_rect(win_width - x_offset_, win_height, 20.0f, win_height * 2.0f, true);
+	// draw_rect(win_width * 0.5f, win_height * 0.25f, win_width * 0.5f, 20.0f, true);
+	// use_color("white");
+
+	draw_image(img_list_[0].c_str(), win_width * 0.5f, win_height * 0.4f, 660, 560, 0.0f);
 
 	int index = 0;
 
@@ -118,10 +174,15 @@ void box2d_test_t::render()
 	{
 		b2Vec2 body_pos = body->GetPosition();
 		float radius = body->GetFixtureList()[0].GetShape()->m_radius;
+		float rot = body->GetAngle();
 
-		use_color(colors_[body]);
-		draw_circle(body_pos.x, body_pos.y, 0.0f, radius);
-		use_color("white");
+		// use_color(colors_[body]);
+		// draw_circle(body_pos.x, body_pos.y, 0.0f, radius);
+		// use_color("white");
+
+		draw_image(img_list_[imgs_[body]].c_str(), body_pos.x, body_pos.y, radius * 2.0f, radius * 2.0f,
+			0.5f, 0.5f, 0.9f, 0.9f,
+			rot);
 
 		if(connected_list_.count(body) > 0)
 		{
@@ -129,7 +190,7 @@ void box2d_test_t::render()
 			draw_circle(body_pos.x, body_pos.y, radius - 6.0f, radius - 4.0f);
 
 			use_color("blue");
-			draw_circle(body_pos.x, body_pos.y, 0.0f, radius - 8.0f);
+			draw_circle(body_pos.x, body_pos.y, radius - 10.0f, radius - 8.0f);
 
 			use_color("white");
 		}
@@ -140,7 +201,7 @@ void box2d_test_t::render()
 			draw_circle(body_pos.x, body_pos.y, radius - 6.0f, radius - 4.0f);
 
 			use_color("blue");
-			draw_circle(body_pos.x, body_pos.y, 0.0f, radius - 8.0f);
+			draw_circle(body_pos.x, body_pos.y, radius - 10.0f, radius - 8.0f);
 
 			use_color("white");
 		}
@@ -151,7 +212,7 @@ void box2d_test_t::render()
 			draw_circle(body_pos.x, body_pos.y, radius - 6.0f, radius - 4.0f);
 
 			use_color("red");
-			draw_circle(body_pos.x, body_pos.y, 0.0f, radius - 8.0f);
+			draw_circle(body_pos.x, body_pos.y, radius - 10.0f, radius - 8.0f);
 
 			use_color("white");
 		}
@@ -162,7 +223,7 @@ void box2d_test_t::render()
 			draw_circle(body_pos.x, body_pos.y, radius - 6.0f, radius - 4.0f);
 
 			use_color("red");
-			draw_circle(body_pos.x, body_pos.y, 0.0f, radius - 8.0f);
+			draw_circle(body_pos.x, body_pos.y, radius - 10.0f, radius - 8.0f);
 
 			int level = bomb_list_[body];
 
@@ -196,12 +257,12 @@ void box2d_test_t::render()
 
 			if(1 == level)
 			{
-				use_color("red");
+				use_color("blue");
 				draw_circle(body_pos.x, body_pos.y, bomb_1_radius_ - 2.0f, bomb_1_radius_);
 			}
 			else if(2 == level)
 			{
-				use_color("red");
+				use_color("blue");
 
 				draw_line(0.0f, body_pos.y - bomb_2_size_, win_width, body_pos.y - bomb_2_size_, 2.0f);
 				draw_line(0.0f, body_pos.y + bomb_2_size_, win_width, body_pos.y + bomb_2_size_, 2.0f);
@@ -216,9 +277,9 @@ void box2d_test_t::render()
 		++index;
 	}
 
-	use_color("yellow");
+	use_color("lime");
 
-	glLineWidth(2.0f);
+	glLineWidth(5.0f);
 
 	glBegin(GL_LINE_STRIP);
 
@@ -239,6 +300,15 @@ void box2d_test_t::render()
 	}
 
 	glEnd();
+
+	use_color("white");
+
+	// use_color("black");
+	// draw_rect(win_width * 0.5f, y_offset_1_, win_width, 20.0f, true);
+	// draw_rect(x_offset_, win_height, 20.0f, win_height * 2.0f, true);
+	// // draw_rect(win_width * 0.5f, y_offset_2_, win_width, 20.0f, true);
+	// draw_rect(win_width - x_offset_, win_height, 20.0f, win_height * 2.0f, true);
+	// use_color("white");
 }
 
 void box2d_test_t::update()
@@ -271,8 +341,6 @@ void box2d_test_t::update()
 	{
 		remove(explode_list_, false);
 		explode_list_.clear();
-
-		
 	}
 
 	auto_connect();
@@ -386,6 +454,8 @@ void box2d_test_t::mouse_up(int x, int y, int btn)
 
 void box2d_test_t::mouse_down(int x, int y, int btn)
 {
+	LOG("<mouse_down>") << x << " " << y;
+
 	mouse_pressed_ = true;
 
 	current_selected_ = -1;
@@ -491,6 +561,37 @@ bool box2d_test_t::is_rough_touched(b2Body* body, const b2Vec2& pos)
 	return b2DistanceSquared(pos, body_pos) <= radius * radius;
 }
 
+void box2d_test_t::add_poly_point(point_list_t& point_list, const point_t& point)
+{
+	point_list.push_back(point);
+}
+
+void box2d_test_t::create_poly_border(const point_list_t& point_list)
+{
+	int i = 0, n = point_list.size();
+
+	b2Vec2* vertices = new b2Vec2[n];
+
+	for(const auto& it : point_list)
+	{
+		vertices[i++].Set(it.first, it.second);
+	}
+
+	b2PolygonShape shape;
+	shape.Set(vertices, n);
+
+	b2FixtureDef def;
+	def.density = 0.0f;
+	def.shape = &shape;
+
+	b2BodyDef body_def;
+	body_def.position.Set(0.0f, 0.0f);
+	b2Body* body = world_.CreateBody(&body_def);
+	body->CreateFixture(&def);
+
+	delete[] vertices;
+}
+
 bool box2d_test_t::is_nearby(b2Body* this_body, b2Body* that_body)
 {
 	b2Vec2 this_position = this_body->GetPosition();
@@ -570,19 +671,22 @@ void box2d_test_t::generate(int num, bool auto_remove)
 
 	for(int i = 0; i < num; ++i)
 	{
+		int rand_n = rand_int(0, 3);
+
 		bodyDef.position.Set(rand_real(win_width * 0.1, win_width * 0.9),
 			rand_real(win_height * 1.0, win_height * 1.8));
 
 		b2Body* body = world_.CreateBody(&bodyDef);
 
 		b2CircleShape dynamicCircle;
-		dynamicCircle.m_radius = rand_real(30.0, 30.0);
+		// dynamicCircle.m_radius = rand_real(30.0, 30.0);
+		dynamicCircle.m_radius = 20 + ((3 - rand_n) + 1) * 5;
 
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &dynamicCircle;
 
-		fixtureDef.density = 1.0f;
-		fixtureDef.friction = 0.3f;
+		fixtureDef.density = 100.0f;
+		fixtureDef.friction = 2.0f;
 
 		body->CreateFixture(&fixtureDef);
 
@@ -595,9 +699,19 @@ void box2d_test_t::generate(int num, bool auto_remove)
 		b2Vec2 impulse(0.0f, rand_real(-100.0f, -200.0f));
 		body->ApplyLinearImpulse(impulse, body->GetWorldCenter(), true);
 
+		// float rotation(rand_real(0, 360.0f));
+		// body->SetXForm(body->GetPosition(), rotation);
+
+		float angular_velocity(rand_real(-10.0f, 10.0f));
+		body->SetAngularVelocity(angular_velocity);
+
+		// float angular_impulse(rand_real(-30.0f, 30.0f));
+		// body->ApplyAngularImpulse(angular_impulse, true);
+
 		bodies_.push_back(body);
 
-		colors_[body] = rand_int(10, 13);
+		colors_[body] = 10 + rand_n;
+		imgs_[body] = 1 + rand_n;
 
 		if(auto_remove)
 		{

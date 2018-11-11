@@ -29,7 +29,7 @@ void fps()
 
 	if(duration.count() >= 1000)
 	{
-		LOG("fps") << floor(1000.0f * frame / duration.count());
+		// LOG("fps") << floor(1000.0f * frame / duration.count());
 
 		frame = 0;
 		base_time = now;
@@ -38,11 +38,16 @@ void fps()
 
 int main(int argc, char** argv)
 {
+	std::string base_path(argv[0]);
+	base_path = base_path.substr(0, base_path.find_last_of('/'));
+
+	LOG("base_path") << base_path;
+
 	try
 	{
 		boost::asio::io_service service;
 
-		box2d_test_t game;
+		box2d_test_t game(base_path);
 
 		timer_t timer(service, 10,
 			[&](int, uint64_t)

@@ -2,26 +2,27 @@
 #define BOX2D_TEST_INCLUDED
 
 #include <map>
+#include <string>
 #include <vector>
+#include <utility>
 #include <unordered_set>
 #include <unordered_map>
 
 #include "Box2D/Box2D.h"
 
-#include "texture.h"
-
 class box2d_test_t
 {
 public:
-	box2d_test_t();
+	box2d_test_t(const std::string& base_path);
+	~box2d_test_t();
 
 	void init();
 	void reset();
 	void render();
 	void update();
 
-	void save(const std::string& sav);
-	void load(const std::string& sav);
+	void save(const std::string& path);
+	void load(const std::string& path);
 
 	void key_up(int key);
 	void key_down(int key);
@@ -33,11 +34,21 @@ public:
 	void mouse_wheel(int x, int y, int dir);
 
 private:
+	using point_t = std::pair<float, float>;
+	using point_list_t = std::vector<point_t>;
+
+	std::string base_path_;
+
 	bool mouse_pressed_;
+
+	std::vector<std::string> img_list_;
+
+	float x_offset_, y_offset_1_, y_offset_2_;
 
 	b2World world_;
 	std::vector<b2Body*> bodies_;
 	std::unordered_map<b2Body*, int> colors_;
+	std::unordered_map<b2Body*, int> imgs_;
 
 	int current_selected_;
 	std::vector<int> selected_stack_;
@@ -57,6 +68,9 @@ private:
 
 	float max_gap_, extra_dist_;
 	int min_remove_num_, max_obj_num_;
+
+	void add_poly_point(point_list_t& point_list, const point_t& point);
+	void create_poly_border(const point_list_t& point_list);
 
 	bool is_nearby(b2Body* this_body, b2Body* that_body);
 	bool is_connected(b2Body* this_body, b2Body* that_body);

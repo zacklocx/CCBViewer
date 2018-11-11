@@ -21,6 +21,9 @@ public:
 	int height() const;
 
 	void draw(float x, float y, float w, float h, float r) const;
+	void draw(float x, float y, float w, float h,
+		float tx, float ty, float tw, float th,
+		float r) const;
 
 	static void clear();
 

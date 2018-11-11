@@ -2,9 +2,12 @@
 #include "draw.h"
 
 #include <cstring>
+#include <unordered_map>
 
 #include <GL/gl.h>
 #include <Gl/glu.h>
+
+#include "texture.h"
 
 static const char* color_lib[][2] =
 {
@@ -295,4 +298,36 @@ void draw_circle(float x, float y, float inner_radius, float outer_radius)
 	gluPartialDisk(q, inner_radius, outer_radius, 32, 32, 0.0, 360.0);
 
 	glPopMatrix();
+}
+
+static std::unordered_map<std::string, texture_t> texture_cache;
+
+void load_image(const char* path)
+{
+	texture_t texture(path);
+	texture_cache[path] = texture;
+}
+
+void unload_image(const char* path)
+{
+	texture_cache.erase(path);
+}
+
+void draw_image(const char* path, float x, float y, float width, float height, float rotation)
+{
+	blend_mode(4, 5);
+
+	texture_t texture(path);
+	texture.draw(x, y, width, height, rotation);
+}
+
+void draw_image(const char* path,
+	float x, float y, float width, float height,
+	float tex_x, float tex_y, float tex_width, float tex_height,
+	float rotation)
+{
+	blend_mode(4, 5);
+
+	texture_t texture(path);
+	texture.draw(x, y, width, height, tex_x, tex_y, tex_width, tex_height, rotation);
 }
