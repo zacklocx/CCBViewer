@@ -813,7 +813,7 @@ int box2d_test_t::find_base_color()
 
 	if(ret < 0)
 	{
-		if(current_selected_ > 0)
+		if(current_selected_ >= 0)
 		{
 			auto body = bodies_[current_selected_];
 
@@ -971,8 +971,10 @@ void box2d_test_t::explode(b2Body* bomb)
 				{
 					explode(body);
 				}
-
-				explode_list_.insert(body);
+				else
+				{
+					explode_list_.insert(body);
+				}
 			}
 		}
 	}
@@ -1006,8 +1008,10 @@ void box2d_test_t::explode_preview(b2Body* bomb)
 				{
 					explode_preview(body);
 				}
-
-				explode_preview_list_.insert(body);
+				else
+				{
+					explode_preview_list_.insert(body);
+				}
 			}
 		}
 		else if(2 == level)
