@@ -15,6 +15,7 @@ Testing/
 CMakeFiles/
 _CPack_Packages/
 
+.idea/
 .sync/
 Icon
 
