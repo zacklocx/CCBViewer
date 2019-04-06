@@ -11,6 +11,8 @@ install_manifest.txt
 lib/
 bin/
 build/
+cmake-build-debug/
+
 Testing/
 CMakeFiles/
 _CPack_Packages/
