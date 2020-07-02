@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "box2d/box2d.h"
+#include "Box2D/Box2D.h"
 
 class box2d_test_t
 {
