@@ -16,8 +16,8 @@
 #include "window.h"
 #include "texture.h"
 
-// #include "fluid_sim/fluid_sim.h"
-#include "box2d_test/box2d_test.h"
+#include "fluid_sim/fluid_sim.h"
+// #include "box2d_test/box2d_test.h"
 
 void fps()
 {
@@ -49,7 +49,8 @@ int main(int argc, char** argv)
 	{
 		boost::asio::io_service service;
 
-		box2d_test_t game(base_path);
+		fluid_sim_t game;
+		// box2d_test_t game(base_path);
 
 		// timer_t timer(service, 10,
 		// 	[&](int, uint64_t)
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
 			[&]()
 			{
 				game.render();
-				game.update();
+				// game.update();
 
 				fps();
 			}

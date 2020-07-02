@@ -242,8 +242,8 @@ void fluid_sim_t::render()
 	if(window_t::is_key_down(114))
 	{
 		glBegin(GL_LINES);
-			glVertex2fv(end_point_[0].data.data);
-			glVertex2fv(mouse_pos_.data.data);
+			glVertex2f(end_point_[0].x, end_point_[0].y);
+			glVertex2f(mouse_pos_.x, mouse_pos_.y);
 		glEnd();
 	}
 
@@ -374,7 +374,7 @@ void fluid_sim_t::key_up(int key)
 		mouse_pos_.x = window_t::mouse_x() * win_scale_x_;
 		mouse_pos_.y = window_t::mouse_y() * win_scale_y_;
 
-		end_point_[1] == mouse_pos_;
+		end_point_[1] = mouse_pos_;
 
 		glm::vec2 diff = end_point_[0] - end_point_[1];
 
