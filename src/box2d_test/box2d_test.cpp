@@ -313,9 +313,9 @@ void box2d_test_t::render()
 
 void box2d_test_t::update()
 {
-	float32 timeStep = 1.0f / 10.0f;
-	int32 velocityIterations = 6;
-	int32 positionIterations = 2;
+	float timeStep = 1.0f / 10.0f;
+	int velocityIterations = 6;
+	int positionIterations = 2;
 
 	world_.Step(timeStep, velocityIterations, positionIterations);
 
