@@ -34,7 +34,7 @@ include_directories(${SOCI_INCLUDE_DIRS})
 include_directories(${FREEGLUT_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/third_party/imgui)
-include_directories(${CMAKE_SOURCE_DIR}/third_party/Box2D)
+include_directories(${CMAKE_SOURCE_DIR}/third_party/Box2D/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/spine-runtimes/spine-cpp/spine-cpp/include)
 
