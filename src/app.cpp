@@ -3,12 +3,14 @@
 
 #include <chrono>
 
+#include <boost/asio.hpp>
+
 #include <GL/gl.h>
 
 #include "log.h"
 #include "draw.h"
 #include "util.h"
-#include "timer.h"
+// #include "timer.h"
 #include "thread.h"
 #include "render.h"
 #include "window.h"
@@ -49,16 +51,16 @@ int main(int argc, char** argv)
 
 		box2d_test_t game(base_path);
 
-		timer_t timer(service, 10,
-			[&](int, uint64_t)
-			{
-				if(window_t::is_ready())
-				{
-				}
-			}
-		);
+		// timer_t timer(service, 10,
+		// 	[&](int, uint64_t)
+		// 	{
+		// 		if(window_t::is_ready())
+		// 		{
+		// 		}
+		// 	}
+		// );
 
-		timer.run();
+		// timer.run();
 
 		thread_t<JOIN> update_thread([&]() { service.run(); });
 
@@ -97,7 +99,7 @@ int main(int argc, char** argv)
 			{
 				LOG("on_destroy");
 
-				timer.stop();
+				// timer.stop();
 				texture_t::clear();
 			}
 		);
