@@ -34,6 +34,7 @@ include_directories(${SOCI_INCLUDE_DIRS})
 include_directories(${FREEGLUT_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/third_party/imgui)
+include_directories(${CMAKE_SOURCE_DIR}/third_party/Box2D/src)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/Box2D/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/avhttp/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/spine-runtimes/spine-cpp/spine-cpp/include)
@@ -51,7 +52,7 @@ set(EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
 file(GLOB MAIN_CPP ${CMAKE_SOURCE_DIR}/src/*.cpp)
 file(GLOB IMGUI_CPP ${CMAKE_SOURCE_DIR}/third_party/imgui/*.cpp)
-file(GLOB_RECURSE BOX2D_CPP ${CMAKE_SOURCE_DIR}/third_party/Box2D/Box2D/*.cpp)
+file(GLOB_RECURSE BOX2D_CPP ${CMAKE_SOURCE_DIR}/third_party/Box2D/src/*.cpp)
 file(GLOB SPINE_CPP ${CMAKE_SOURCE_DIR}/third_party/spine-runtimes/spine-cpp/spine-cpp/src/spine/*.cpp)
 
 file(GLOB_RECURSE FLUID_SIM_CPP ${CMAKE_SOURCE_DIR}/src/fluid_sim/*.cpp)
